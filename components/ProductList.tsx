@@ -4,6 +4,7 @@ import ProductCard from "./ProductCard";
 import Link from "next/link";
 import { ProductType } from "@/types";
 import Filter from "./Filter";
+import { createProduct } from "@/lib/actions/product.actions";
 
 // TEMPORARY
 const products: ProductType[] = [
@@ -117,7 +118,7 @@ const products: ProductType[] = [
   },
 ];
 
-const ProductList = ({
+const ProductList = async ({
   category,
   params,
 }: {

@@ -8,6 +8,8 @@ import { useState } from "react";
 import React from "react";
 import { toast } from "react-toastify";
 import { Button } from "./ui/button";
+import { createProduct } from "@/lib/actions/product.actions";
+import { getCategories } from "@/lib/actions/category.actions";
 
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { addToCart } = useCartStore();
@@ -34,6 +36,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
     });
     toast.success("Product added to cart!");
   };
+
   return (
     <div className="shadow-lg rounded-lg overflow-hidden">
       <Link href={`/products/${product.id}`}>

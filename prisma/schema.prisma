@@ -1,32 +1,29 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-
 generator client {
-  provider = "prisma-client"
-  output   = "../lib/generated/prisma"
-} 
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
 }
+
 model Product {
-  id          String   @id @default(cuid())
-  name        String
+  id               String   @id @default(cuid())
+  name             String
   shortDescription String
   description      String
-  price       Int
-  sizes       String[]
-  colors      String[]
-  images      Json
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-    categorySlug     String
-category       Category @relation(fields: [categorySlug], references: [slug])
+  price            Int
+  sizes            String[]
+  colors           String[]
+  images           Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  categorySlug     String
+  category         Category @relation(fields: [categorySlug], references: [slug])
 }
+
 model Category {
-  id        Int    @id @default(autoincrement())
-  slug        String   @unique
-  name        String
-  products    Product[]
+  id       Int       @id @default(autoincrement())
+  slug     String    @unique
+  name     String
+  products Product[]
 }
