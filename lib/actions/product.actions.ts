@@ -1,12 +1,13 @@
 "use server";
 import { db } from "@/app/db";
-import { Prisma } from "../generated/prisma/client";
+import { Prisma } from "@prisma/client";
 import { parseStringify } from "../utils";
+import { shouldBeAdmin } from "../types/auth";
 
 export const createProduct = async (data: Prisma.ProductCreateInput) => {
   const { colors, images } = data;
   if (!colors || !Array.isArray(colors) || colors.length === 0) {
-    throw new Error(" Colors array is required!");
+    throw new Error("Colors array is required!");
   }
 
   if (!images || typeof images !== "object") {
@@ -67,6 +68,7 @@ export const updateProduct = async ({
   id: string;
   data: Prisma.ProductUpdateInput;
 }) => {
+  await shouldBeAdmin();
   const updatedProduct = await db.product.update({
     where: {
       id,
@@ -77,6 +79,7 @@ export const updateProduct = async ({
 };
 
 export const deleteProduct = async (id: string) => {
+  await shouldBeAdmin();
   const deletedProduct = await db.product.delete({
     where: {
       id,

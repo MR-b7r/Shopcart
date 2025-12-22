@@ -1,15 +1,30 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import type { JwtSessionClaims } from "@clerk/nextjs/server";
 
 const isProtectedRoute = createRouteMatcher(["/orders(.*)"]);
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
-
 export default clerkMiddleware(async (auth, req) => {
-  // Restrict admin routes to users with specific Permissions
+  const { sessionClaims, userId, getToken } = await auth();
+  const token = await getToken();
+  console.log("token", token);
+  const claims = sessionClaims as JwtSessionClaims & CustomJwtSessionClaims;
+  const role = claims?.metadata?.role;
+
+  // if (!userId) {
+  //   return NextResponse.json(
+  //     { message: "You are not logged in!" },
+  //     { status: 401 }
+  //   );
+  // }
+
   if (isAdminRoute(req)) {
-    await auth.protect((has) => {
-      return has({ permission: "org:admin" });
-    });
+    if (role !== "admin") {
+      return NextResponse.json(
+        { message: "You do not have permission to access this route!" },
+        { status: 403 }
+      );
+    }
   }
 
   // Restrict Organization routes to signed in users

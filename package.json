@@ -42,6 +42,7 @@
     "react-hook-form": "^7.67.0",
     "react-toastify": "^11.0.5",
     "recharts": "2.15.4",
+    "stripe": "^20.1.0",
     "tailwind-merge": "^3.4.0",
     "zod": "^4.1.13",
     "zustand": "^5.0.9"
