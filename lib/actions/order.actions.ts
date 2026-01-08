@@ -2,7 +2,7 @@
 import { db } from "@/app/db";
 import { Prisma } from "@prisma/client";
 import { parseStringify } from "../utils";
-import { shouldBeAdmin } from "../types/auth";
+import { shouldBeAdmin } from "./payment.actions";
 
 export const createOrder = async (data: Prisma.OrderCreateInput) => {
   const newOrder = await db.order.create({ data });

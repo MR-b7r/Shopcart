@@ -2,7 +2,7 @@
 import { db } from "@/app/db";
 import { Prisma } from "@prisma/client";
 import { parseStringify } from "../utils";
-import { shouldBeAdmin } from "../types/auth";
+import { shouldBeAdmin } from "./payment.actions";
 
 export const createProduct = async (data: Prisma.ProductCreateInput) => {
   const { colors, images } = data;

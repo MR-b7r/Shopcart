@@ -4,10 +4,11 @@ import type { JwtSessionClaims } from "@clerk/nextjs/server";
 
 const isProtectedRoute = createRouteMatcher(["/orders(.*)"]);
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+
 export default clerkMiddleware(async (auth, req) => {
   const { sessionClaims, userId, getToken } = await auth();
   const token = await getToken();
-  console.log("token", token);
+  // console.log("token", token);
   const claims = sessionClaims as JwtSessionClaims & CustomJwtSessionClaims;
   const role = claims?.metadata?.role;
 

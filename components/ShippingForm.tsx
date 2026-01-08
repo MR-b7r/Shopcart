@@ -3,7 +3,7 @@ import React from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { ShippingFormInputs, shippingFormSchema } from "@/types";
+import { ShippingFormInputs, shippingFormSchema } from "@/lib/types";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -27,11 +27,11 @@ const ShippingForm = ({
   const form = useForm<z.infer<typeof shippingFormSchema>>({
     resolver: zodResolver(shippingFormSchema),
     defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      address: "",
-      city: "",
+      name: "haitham",
+      email: "haithamb74@gmail.com",
+      phone: "101234567",
+      address: "123 Main St, Anytown",
+      city: "dakahlia",
     },
   });
   function onSubmit(data: z.infer<typeof shippingFormSchema>) {

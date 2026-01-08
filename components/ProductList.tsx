@@ -2,14 +2,14 @@ import React from "react";
 import Categories from "./Categories";
 import ProductCard from "./ProductCard";
 import Link from "next/link";
-import { ProductType } from "@/types";
+import { ProductType } from "@/lib/types";
 import Filter from "./Filter";
 import { createProduct } from "@/lib/actions/product.actions";
 
 // TEMPORARY
 const products: ProductType[] = [
   {
-    id: 1,
+    id: 1234,
     name: "Adidas CoreFit T-Shirt",
     shortDescription:
       "Lorem ipsum dolor sit amet consect adipisicing elit lorem ipsum dolor sit.",

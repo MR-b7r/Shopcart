@@ -1,20 +1,21 @@
+import type { Product } from "@prisma/client";
 import z from "zod";
 
-export type ProductType = {
-  id: string | number;
-  name: string;
-  shortDescription: string;
-  description: string;
-  price: number;
-  sizes: string[];
-  colors: string[];
-  images: Record<string, string>;
-};
-
-export type CartItemType = ProductType & {
+export type CartItemType = Product & {
   quantity: number;
   selectedSize: string;
   selectedColor: string;
+};
+
+export type CartStoreStateType = {
+  cart: CartItemType[];
+  hasHydrated: boolean;
+};
+
+export type CartStoreActionsType = {
+  addToCart: (product: CartItemType[]) => void;
+  removeFromCart: (product: CartItemType[]) => void;
+  clearCart: () => void;
 };
 
 export const shippingFormSchema = z.object({
@@ -46,14 +47,3 @@ export const paymentFormSchema = z.object({
 });
 
 export type PaymentFormInputs = z.infer<typeof paymentFormSchema>;
-
-export type CartStoreStateType = {
-  cart: CartItemType[];
-  hasHydrated: boolean;
-};
-
-export type CartStoreActionsType = {
-  addToCart: (product: CartItemType[]) => void;
-  removeFromCart: (product: CartItemType[]) => void;
-  clearCart: () => void;
-};

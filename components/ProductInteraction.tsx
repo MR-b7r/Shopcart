@@ -1,5 +1,5 @@
 "use client";
-import { ProductType } from "@/types";
+import { ProductType } from "@/lib/types";
 import { Minus, Plus, ShoppingCart } from "lucide-react";
 import React, { useState } from "react";
 import { Button } from "./ui/button";

@@ -7,7 +7,7 @@ import {
   paymentFormSchema,
   ShippingFormInputs,
   shippingFormSchema,
-} from "@/types";
+} from "@/lib/types";
 
 import { Button } from "@/components/ui/button";
 import {

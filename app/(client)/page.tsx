@@ -8,13 +8,13 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { auth } from "@clerk/nextjs/server";
 const Homepage = async ({
   searchParams,
 }: {
   searchParams: Promise<{ category: string }>;
 }) => {
   const category = (await searchParams).category;
-
   return (
     <div className="">
       {/* <Carousel className="w-full mx-auto h-full mb-12">
