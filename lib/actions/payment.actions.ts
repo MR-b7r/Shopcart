@@ -49,6 +49,15 @@ export async function getStripeProductPrice(productId: string) {
     return error;
   }
 }
+export async function deleteStripeProduct(productId: string) {
+  try {
+    const res = await stripe.products.del(productId.toString());
+    return res;
+  } catch (error) {
+    console.log(error);
+    return error;
+  }
+}
 export async function createCheckoutSession({
   cart,
   userId,
@@ -56,6 +65,7 @@ export async function createCheckoutSession({
   cart: CartItemType[];
   userId: string;
 }) {
+  console.log("createCheckoutSession called with:", userId);
   const lineItems = await Promise.all(
     cart.map(async (item) => {
       const unitAmount = await getStripeProductPrice(item.id);
@@ -69,7 +79,7 @@ export async function createCheckoutSession({
         },
         quantity: item.quantity,
       };
-    })
+    }),
   );
 
   const session = await stripe.checkout.sessions.create({

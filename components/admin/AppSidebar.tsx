@@ -75,7 +75,7 @@ const AppSidebar = () => {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild>
-              <Link href="/">
+              <Link href="/admin">
                 <Image src="/logo.svg" alt="logo" width={20} height={20} />
                 <span>Shop Cart</span>
               </Link>
@@ -114,7 +114,7 @@ const AppSidebar = () => {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/products">
+                  <Link href="/admin/products">
                     <Shirt />
                     See All Products
                   </Link>
@@ -162,7 +162,7 @@ const AppSidebar = () => {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/users">
+                  <Link href="/admin/users">
                     <User />
                     See All Users
                   </Link>
@@ -195,7 +195,7 @@ const AppSidebar = () => {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/users">
+                  <Link href="/admin/orders">
                     <ShoppingBasket />
                     See All Transactions
                   </Link>

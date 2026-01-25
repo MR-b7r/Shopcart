@@ -8,32 +8,34 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { getProduct } from "@/lib/actions/product.actions";
 
 // TEMPORARY
-const product: ProductType = {
-  id: 1,
-  name: "Adidas CoreFit T-Shirt",
-  shortDescription:
-    "Lorem ipsum dolor sit amet consect adipisicing elit lorem ipsum dolor sit.",
-  description:
-    "Lorem ipsum dolor sit amet consect adipisicing elit lorem ipsum dolor sit. Lorem ipsum dolor sit amet consect adipisicing elit lorem ipsum dolor sit. Lorem ipsum dolor sit amet consect adipisicing elit lorem ipsum dolor sit.",
-  price: 59.9,
-  sizes: ["xs", "s", "m", "l", "xl"],
-  colors: ["gray", "purple", "green"],
-  images: {
-    gray: "/products/1g.png",
-    purple: "/products/1p.png",
-    green: "/products/1gr.png",
-  },
-};
+// const product: ProductType = {
+//   id: 1,
+//   name: "Adidas CoreFit T-Shirt",
+//   shortDescription:
+//     "Lorem ipsum dolor sit amet consect adipisicing elit lorem ipsum dolor sit.",
+//   description:
+//     "Lorem ipsum dolor sit amet consect adipisicing elit lorem ipsum dolor sit. Lorem ipsum dolor sit amet consect adipisicing elit lorem ipsum dolor sit. Lorem ipsum dolor sit amet consect adipisicing elit lorem ipsum dolor sit.",
+//   price: 59.9,
+//   sizes: ["xs", "s", "m", "l", "xl"],
+//   colors: ["gray", "purple", "green"],
+//   images: {
+//     gray: "/products/1g.png",
+//     purple: "/products/1p.png",
+//     green: "/products/1gr.png",
+//   },
+// };
 
 export const generateMetadata = async ({
   params,
 }: {
   params: { id: string };
 }) => {
-  // TODO:get the product from db
-  // TEMPORARY
+  const { id } = params;
+  const product = await getProduct(id);
+
   return {
     title: product.name,
     describe: product.description,
@@ -48,7 +50,9 @@ const page = async ({
   searchParams: Promise<{ color: string; size: string }>;
 }) => {
   const { size, color } = await searchParams;
+  const { id } = await params;
 
+  const product = await getProduct(id);
   const selectedSize = size || (product.sizes[0] as string);
   const selectedColor = color || (product.colors[0] as string);
   return (

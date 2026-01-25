@@ -2,7 +2,12 @@
 import { db } from "@/app/db";
 import { Prisma } from "@prisma/client";
 import { parseStringify } from "../utils";
-import { shouldBeAdmin } from "./payment.actions";
+import {
+  createStripeProduct,
+  deleteStripeProduct,
+  shouldBeAdmin,
+} from "./payment.actions";
+import { stripeProductType } from "../types";
 
 export const createProduct = async (data: Prisma.ProductCreateInput) => {
   const { colors, images } = data;
@@ -20,6 +25,12 @@ export const createProduct = async (data: Prisma.ProductCreateInput) => {
   }
 
   const product = await db.product.create({ data });
+  const stripeProduct: stripeProductType = {
+    id: product.id.toString(),
+    name: product.name,
+    price: product.price,
+  };
+  await createStripeProduct(stripeProduct);
   return parseStringify(product);
 };
 
@@ -43,8 +54,13 @@ export const getProducts = async (filter) => {
   };
   const products = await db.product.findMany({
     where: {
-      category: { slug: category as string },
-      name: { contains: search as string, mode: "insensitive" },
+      ...(category && category !== "all"
+        ? { category: { slug: category as string } }
+        : {}),
+      name: {
+        contains: search as string,
+        mode: "insensitive",
+      },
     },
     orderBy: orderBy(),
     take: limit ? Number(limit) : undefined,
@@ -79,11 +95,12 @@ export const updateProduct = async ({
 };
 
 export const deleteProduct = async (id: string) => {
-  await shouldBeAdmin();
+  // await shouldBeAdmin();
   const deletedProduct = await db.product.delete({
     where: {
       id,
     },
   });
+  await deleteStripeProduct(id);
   return parseStringify(deletedProduct);
 };

@@ -1,3 +1,4 @@
+import { getOrders } from "@/lib/actions/order.actions";
 import { Payment, columns } from "./columns";
 import { DataTable } from "./data-table";
 
@@ -294,16 +295,16 @@ const getData = async (): Promise<Payment[]> => {
   ];
 };
 
-const PaymentsPage = async () => {
-  const data = await getData();
+const OrdersPage = async () => {
+  const data = await getOrders();
   return (
     <div className="">
       <div className="mb-8 px-4 py-2 bg-secondary rounded-md">
-        <h1 className="font-semibold">All Payments</h1>
+        <h1 className="font-semibold">All Orders</h1>
       </div>
       <DataTable columns={columns} data={data} />
     </div>
   );
 };
 
-export default PaymentsPage;
+export default OrdersPage;

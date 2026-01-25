@@ -21,10 +21,7 @@ export default clerkMiddleware(async (auth, req) => {
 
   if (isAdminRoute(req)) {
     if (role !== "admin") {
-      return NextResponse.json(
-        { message: "You do not have permission to access this route!" },
-        { status: 403 }
-      );
+      await auth.protect();
     }
   }
 
