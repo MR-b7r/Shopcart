@@ -30,73 +30,57 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useEffect, useState } from "react";
+import { CategoryType, colors, ProductFormSchema, sizes } from "@/lib/types";
+import { toast } from "react-toastify";
+import { getCategories } from "@/lib/actions/category.actions";
 
-const categories = [
-  "T-shirts",
-  "Shoes",
-  "Accessories",
-  "Bags",
-  "Dresses",
-  "Jackets",
-  "Gloves",
-] as const;
-
-const colors = [
-  "blue",
-  "green",
-  "red",
-  "yellow",
-  "purple",
-  "orange",
-  "pink",
-  "brown",
-  "gray",
-  "black",
-  "white",
-] as const;
-
-const sizes = [
-  "xs",
-  "s",
-  "m",
-  "l",
-  "xl",
-  "xxl",
-  "34",
-  "35",
-  "36",
-  "37",
-  "38",
-  "39",
-  "40",
-  "41",
-  "42",
-  "43",
-  "44",
-  "45",
-  "46",
-  "47",
-  "48",
-] as const;
-
-const formSchema = z.object({
-  name: z.string().min(1, { message: "Product name is required!" }),
-  shortDescription: z
-    .string()
-    .min(1, { message: "Short description is required!" })
-    .max(60),
-  description: z.string().min(1, { message: "Description is required!" }),
-  price: z.number().min(1, { message: "Price is required!" }),
-  category: z.enum(categories),
-  sizes: z.array(z.enum(sizes)),
-  colors: z.array(z.enum(colors)),
-  images: z.record(z.enum(colors), z.string()),
-});
+// const categories = [
+//   "T-shirts",
+//   "Shoes",
+//   "Accessories",
+//   "Bags",
+//   "Dresses",
+//   "Jackets",
+//   "Gloves",
+// ] as const;
 
 const AddProduct = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [categoriesList, setCategoriesList] = useState<CategoryType[]>([]);
+  const form = useForm<z.infer<typeof ProductFormSchema>>({
+    resolver: zodResolver(ProductFormSchema),
+    defaultValues: {
+      name: "",
+      shortDescription: "",
+      description: "",
+      price: 0,
+      categorySlug: "",
+      sizes: [],
+      colors: [],
+      images: {},
+    },
   });
+
+  async function onSubmit(data: z.infer<typeof ProductFormSchema>) {
+    try {
+      setIsSubmitting(true);
+      console.log(data);
+      toast.success("Product created successfully!");
+    } catch (error) {
+      toast.error("Failed to create product!");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  useEffect(() => {
+    async function fetchCategories() {
+      const data = await getCategories();
+      setCategoriesList(data);
+    }
+    fetchCategories();
+  }, []);
   return (
     <SheetContent>
       <ScrollArea className="h-screen">
@@ -104,7 +88,10 @@ const AddProduct = () => {
           <SheetTitle className="mb-4">Add Product</SheetTitle>
           <SheetDescription asChild>
             <Form {...form}>
-              <form className="space-y-8">
+              <form
+                className="space-y-8"
+                onSubmit={form.handleSubmit(onSubmit)}
+              >
                 <FormField
                   control={form.control}
                   name="name"
@@ -160,7 +147,7 @@ const AddProduct = () => {
                     <FormItem>
                       <FormLabel>Price</FormLabel>
                       <FormControl>
-                        <Input type="number" {...field} />
+                        <Input {...field} />
                       </FormControl>
                       <FormDescription>
                         Enter the price of the product.
@@ -169,33 +156,38 @@ const AddProduct = () => {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="category"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Category</FormLabel>
-                      <FormControl>
-                        <Select>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a category" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {categories.map((cat) => (
-                              <SelectItem key={cat} value={cat}>
-                                {cat}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormDescription>
-                        Enter the category of the product.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {categoriesList && categoriesList.length > 0 && (
+                  <FormField
+                    control={form.control}
+                    name="categorySlug"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Category</FormLabel>
+                        <FormControl>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select a category" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {categoriesList.map((cat: CategoryType) => (
+                                <SelectItem key={cat.id} value={cat.slug}>
+                                  {cat.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </FormControl>
+                        <FormDescription>
+                          Enter the category of the product.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
                 <FormField
                   control={form.control}
                   name="sizes"
@@ -215,7 +207,7 @@ const AddProduct = () => {
                                     field.onChange([...currentValues, size]);
                                   } else {
                                     field.onChange(
-                                      currentValues.filter((v) => v !== size)
+                                      currentValues.filter((v) => v !== size),
                                     );
                                   }
                                 }}
@@ -257,7 +249,9 @@ const AddProduct = () => {
                                       field.onChange([...currentValues, color]);
                                     } else {
                                       field.onChange(
-                                        currentValues.filter((v) => v !== color)
+                                        currentValues.filter(
+                                          (v) => v !== color,
+                                        ),
                                       );
                                     }
                                   }}
@@ -293,6 +287,15 @@ const AddProduct = () => {
                                     {color}
                                   </span>
                                   <Input type="file" accept="image/*" />
+                                  {/* {field.value?.[color] ? (
+                                    <span className="text-green-600 text-sm">
+                                      Image selected
+                                    </span>
+                                  ) : (
+                                    <span className="text-red-600 text-sm">
+                                      Image required
+                                    </span>
+                                  )} */}
                                 </div>
                               ))}
                             </div>
@@ -306,7 +309,23 @@ const AddProduct = () => {
                     </FormItem>
                   )}
                 />
-                <Button type="submit">Submit</Button>
+                <FormField
+                  control={form.control}
+                  name="images"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Images</FormLabel>
+                      <FormControl></FormControl>
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? "Loading..." : "Submit"}
+                </Button>
               </form>
             </Form>
           </SheetDescription>

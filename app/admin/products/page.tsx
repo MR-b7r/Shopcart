@@ -2,7 +2,7 @@ import { getProducts } from "@/lib/actions/product.actions";
 import { Product, columns } from "./columns";
 import { DataTable } from "./data-table";
 
-const PaymentsPage = async () => {
+const ProductsPage = async () => {
   const data = await getProducts({});
   return (
     <div className="">
@@ -14,4 +14,4 @@ const PaymentsPage = async () => {
   );
 };
 
-export default PaymentsPage;
+export default ProductsPage;

@@ -27,22 +27,40 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-
-const formSchema = z.object({
-  name: z.string().min(1, { message: "Name is Required!" }),
-});
+import { CategoryFormSchema } from "@/lib/types";
+import { useState } from "react";
+import { createCategory } from "@/lib/actions/category.actions";
+import { toast } from "react-toastify";
 
 const AddCategory = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const form = useForm<z.infer<typeof CategoryFormSchema>>({
+    resolver: zodResolver(CategoryFormSchema),
+    defaultValues: {
+      name: "",
+      slug: "",
+    },
   });
+
+  async function onSubmit(data: z.infer<typeof CategoryFormSchema>) {
+    try {
+      setIsSubmitting(true);
+      const category = await createCategory(data);
+      toast.success("Category created successfully!");
+
+      setIsSubmitting(false);
+    } catch (error) {
+      toast.error("Failed to create category!");
+      setIsSubmitting(false);
+    }
+  }
   return (
     <SheetContent>
       <SheetHeader>
         <SheetTitle className="mb-4">Add Category</SheetTitle>
         <SheetDescription asChild>
           <Form {...form}>
-            <form className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <FormField
                 control={form.control}
                 name="name"
@@ -57,7 +75,27 @@ const AddCategory = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit">Submit</Button>
+              <FormField
+                control={form.control}
+                name="slug"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Slug</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormDescription>Enter category slug.</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? "Loading..." : "Submit"}
+              </Button>
             </form>
           </Form>
         </SheetDescription>

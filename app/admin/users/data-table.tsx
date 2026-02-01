@@ -22,6 +22,10 @@ import { DataTablePagination } from "@/components/admin/TablePagination";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { deleteUser } from "@/lib/actions/user.actions";
+import { User } from "@clerk/nextjs/server";
+import { toast } from "react-toastify";
+import { useRouter } from "next/navigation";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -48,7 +52,27 @@ export function DataTable<TData, TValue>({
       rowSelection,
     },
   });
+  const [isPending, setIsPending] = useState(false);
+  const router = useRouter();
 
+  async function handleDeleteUsers() {
+    try {
+      setIsPending(true);
+      const selectedRows = table.getSelectedRowModel().rows;
+      Promise.all(
+        selectedRows.map((row) => {
+          const userId = (row.original as User).id;
+          return deleteUser(userId);
+        }),
+      );
+      toast.success("Users deleted successfully!");
+      router.refresh();
+    } catch (error) {
+      toast.error("Failed to delete users!");
+    } finally {
+      setIsPending(false);
+    }
+  }
   return (
     <div className="rounded-md border">
       {Object.keys(rowSelection).length > 0 && (
@@ -57,6 +81,8 @@ export function DataTable<TData, TValue>({
             variant="destructive"
             size={"sm"}
             className="m-4 cursor-pointer "
+            disabled={isPending}
+            onClick={handleDeleteUsers}
           >
             <Trash2 className="w-4 h-4" />
             Delete User(s)
@@ -74,7 +100,7 @@ export function DataTable<TData, TValue>({
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 );

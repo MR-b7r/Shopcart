@@ -6,6 +6,7 @@ import Navbar from "@/components/admin/Navbar";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { cookies } from "next/headers";
+import { ToastContainer } from "react-toastify";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard - Shopcart",
@@ -21,21 +22,26 @@ export default async function AdminLayout({
   const defaultOpen = cookieStore.get("sidebar_state")?.value === "true";
 
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="light"
-      enableSystem
-      disableTransitionOnChange
-    >
-      <div className="flex">
-        <SidebarProvider defaultOpen={defaultOpen}>
-          <AppSidebar />
-          <main className="w-full">
-            <Navbar />
-            <div className="px-4">{children}</div>
-          </main>
-        </SidebarProvider>
-      </div>
-    </ThemeProvider>
+    <>
+      {/* <div className="flex"> */}
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="light"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <div className="flex">
+          <SidebarProvider defaultOpen={defaultOpen}>
+            <AppSidebar />
+            <main className="w-full">
+              <Navbar />
+              <div className="px-4">{children}</div>
+            </main>
+          </SidebarProvider>
+        </div>
+      </ThemeProvider>
+      {/* </div> */}
+      <ToastContainer position="bottom-right" />
+    </>
   );
 }

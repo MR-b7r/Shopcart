@@ -28,22 +28,36 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-const formSchema = z.object({
-  fullName: z
-    .string()
-    .min(2, { message: "Full name must be at least 2 characters!" })
-    .max(50),
-  email: z.string().email({ message: "Invalid email address!" }),
-  phone: z.string().min(10).max(15),
-  address: z.string().min(2),
-  city: z.string().min(2),
-});
+import { useState } from "react";
+import { toast } from "react-toastify";
+import { UserFormSchema } from "@/lib/types";
+import { createUser } from "@/lib/actions/user.actions";
 
 const AddUser = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const form = useForm<z.infer<typeof UserFormSchema>>({
+    resolver: zodResolver(UserFormSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      emailAddress: [],
+      username: "",
+      password: "",
+    },
   });
+
+  async function onSubmit(data: z.infer<typeof UserFormSchema>) {
+    try {
+      setIsSubmitting(true);
+      await createUser(data);
+      toast.success("User created successfully!");
+    } catch (error: any) {
+      console.error("Failed to create user:", error);
+      toast.error(`Failed to create user! ${error.message}`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
   return (
     <SheetContent>
       <ScrollArea className="h-screen">
@@ -51,29 +65,70 @@ const AddUser = () => {
           <SheetTitle className="mb-4">Add User</SheetTitle>
           <SheetDescription asChild>
             <Form {...form}>
-              <form className="space-y-8">
+              <form
+                className="space-y-8"
+                onSubmit={form.handleSubmit(onSubmit)}
+              >
                 <FormField
                   control={form.control}
-                  name="fullName"
+                  name="firstName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Full Name</FormLabel>
+                      <FormLabel>First Name</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
-                      <FormDescription>Enter user full name.</FormDescription>
+                      <FormDescription>Enter user first name.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="lastName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel>Last Name</FormLabel>
                       <FormControl>
                         <Input {...field} />
+                      </FormControl>
+                      <FormDescription>Enter user last name.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="username"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Username</FormLabel>
+                      <FormControl>
+                        <Input {...field} />
+                      </FormControl>
+                      <FormDescription>Enter username.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="emailAddress"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email Addresses</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="email1@gmail.com, email2@gmail.com"
+                          onChange={(e) => {
+                            const emails = e.target.value
+                              .split(",")
+                              .map((email) => email.trim())
+                              .filter((email) => email);
+                            field.onChange(emails);
+                          }}
+                        />
                       </FormControl>
                       <FormDescription>
                         Only admin can see your email.
@@ -84,53 +139,25 @@ const AddUser = () => {
                 />
                 <FormField
                   control={form.control}
-                  name="phone"
+                  name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone</FormLabel>
+                      <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input {...field} type="password" />
                       </FormControl>
-                      <FormDescription>
-                        Only admin can see your phone number (optional)
-                      </FormDescription>
+                      <FormDescription>Enter user password.</FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Address</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        Enter user address (optional)
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="city"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>City</FormLabel>
-                      <FormControl>
-                        <Input {...field} />
-                      </FormControl>
-                      <FormDescription>
-                        Enter user city (optional)
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button type="submit">Submit</Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? "Loading..." : "Submit"}
+                </Button>
               </form>
             </Form>
           </SheetDescription>

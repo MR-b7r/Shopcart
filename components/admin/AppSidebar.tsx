@@ -43,7 +43,7 @@ import AddProduct from "./AddProduct";
 const items = [
   {
     title: "Home",
-    url: "/",
+    url: "/admin",
     icon: Home,
   },
   {
@@ -197,7 +197,7 @@ const AppSidebar = () => {
                 <SidebarMenuButton asChild>
                   <Link href="/admin/orders">
                     <ShoppingBasket />
-                    See All Transactions
+                    See All Orders
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

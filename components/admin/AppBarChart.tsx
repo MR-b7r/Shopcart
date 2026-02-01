@@ -29,7 +29,7 @@ const chartData = [
   { month: "June", total: 214, successful: 140 },
 ];
 
-const AppBarChart = () => {
+const AppBarChart = ({ chartData }: { chartData: any }) => {
   return (
     <div className="">
       <h1 className="text-lg font-medium mb-6">Total Revenue</h1>

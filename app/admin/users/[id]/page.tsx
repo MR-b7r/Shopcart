@@ -20,8 +20,16 @@ import { Button } from "@/components/ui/button";
 import EditUser from "@/components/admin/EditUser";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import AppLineChart from "@/components/admin/AppLineChart";
+import { getUserById } from "@/lib/actions/user.actions";
 
-const SingleUserPage = () => {
+const SingleUserPage = async ({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) => {
+  const { id } = await params;
+  const user = await getUserById(id);
+
   return (
     <div className="">
       <Breadcrumb>
@@ -35,7 +43,9 @@ const SingleUserPage = () => {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>John Doe</BreadcrumbPage>
+            <BreadcrumbPage>
+              {user?.firstName + " " + user?.lastName || user?.username || "-"}
+            </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -110,10 +120,18 @@ const SingleUserPage = () => {
           <div className="bg-primary-foreground p-4 rounded-lg space-y-2">
             <div className="flex items-center gap-2">
               <Avatar className="size-12">
-                <AvatarImage src="https://avatars.githubusercontent.com/u/1486366" />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarImage src={user.imageUrl} />
+                <AvatarFallback>
+                  {user?.firstName?.charAt(0) ||
+                    user?.username?.charAt(0) ||
+                    "-"}
+                </AvatarFallback>
               </Avatar>
-              <h1 className="text-xl font-semibold">John Doe</h1>
+              <h1 className="text-xl font-semibold">
+                {user?.firstName + " " + user?.lastName ||
+                  user?.username ||
+                  "-"}
+              </h1>
             </div>
             <p className="text-sm text-muted-foreground">
               Lorem ipsum dolor, sit amet consectetur adipisicing elit. Vel
@@ -122,7 +140,6 @@ const SingleUserPage = () => {
               in, quis quia.
             </p>
           </div>
-
           {/* INFORMATION CONTAINER */}
           <div className="bg-primary-foreground p-4 rounded-lg">
             <div className="flex items-center justify-between">
@@ -142,28 +159,32 @@ const SingleUserPage = () => {
                 <Progress value={66} />
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-bold">Full Name:</span>
-                <span>john doe</span>
+                <span className="font-bold">Full name:</span>
+                <span>
+                  {user?.firstName + " " + user?.lastName ||
+                    user?.username ||
+                    "-"}
+                </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-bold">Email:</span>
-                <span>john.doe@gmail.com</span>
+                <span>{user.emailAddresses[0]?.emailAddress || "-"}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-bold">Phone:</span>
-                <span>+1 234 5678</span>
+                <span>{user.phoneNumbers[0]?.phoneNumber || "-"}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-bold">Address:</span>
-                <span>123 main ST</span>
+                <span className="font-bold">Role:</span>
+                <span>{String(user.publicMetadata?.role) || "user"}</span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="font-bold">City:</span>
-                <span>Egypt</span>
+                <span className="font-bold">Status:</span>
+                <span>{user.banned ? "banned" : "active"}</span>
               </div>
             </div>
             <p className="text-sm text-muted-foreground mt-4">
-              Joined on 2025.01.01
+              Joined on {new Date(user.createdAt).toLocaleDateString("en-US")}
             </p>
           </div>
         </div>
