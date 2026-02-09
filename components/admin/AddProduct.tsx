@@ -34,6 +34,7 @@ import { useEffect, useState } from "react";
 import { CategoryType, colors, ProductFormSchema, sizes } from "@/lib/types";
 import { toast } from "react-toastify";
 import { getCategories } from "@/lib/actions/category.actions";
+import { createProduct } from "@/lib/actions/product.actions";
 
 // const categories = [
 //   "T-shirts",
@@ -66,6 +67,7 @@ const AddProduct = () => {
     try {
       setIsSubmitting(true);
       console.log(data);
+      await createProduct(data);
       toast.success("Product created successfully!");
     } catch (error) {
       toast.error("Failed to create product!");
@@ -73,7 +75,38 @@ const AddProduct = () => {
       setIsSubmitting(false);
     }
   }
+  async function handleImageUpload(
+    e: React.ChangeEvent<HTMLInputElement>,
+    color: string,
+  ) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("upload_preset", "shopcart");
 
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      const data = await res.json();
+      if (data.secure_url) {
+        const currentImages = form.getValues("images") || {};
+        form.setValue("images", {
+          ...currentImages,
+          [color]: data.secure_url,
+        });
+      }
+    } catch (err) {
+      console.log(err);
+      toast.error("Upload failed!");
+    }
+  }
   useEffect(() => {
     async function fetchCategories() {
       const data = await getCategories();
@@ -147,7 +180,13 @@ const AddProduct = () => {
                     <FormItem>
                       <FormLabel>Price</FormLabel>
                       <FormControl>
-                        <Input {...field} />
+                        <Input
+                          type="number"
+                          {...field}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
+                        />
                       </FormControl>
                       <FormDescription>
                         Enter the price of the product.
@@ -286,16 +325,22 @@ const AddProduct = () => {
                                   <span className="text-sm min-w-[60px]">
                                     {color}
                                   </span>
-                                  <Input type="file" accept="image/*" />
-                                  {/* {field.value?.[color] ? (
+                                  <Input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) =>
+                                      handleImageUpload(e, color)
+                                    }
+                                  />
+                                  {field.value?.[color] ? (
                                     <span className="text-green-600 text-sm">
-                                      Image selected
+                                      Image uploaded
                                     </span>
                                   ) : (
                                     <span className="text-red-600 text-sm">
-                                      Image required
+                                      No image uploaded
                                     </span>
-                                  )} */}
+                                  )}
                                 </div>
                               ))}
                             </div>
@@ -306,16 +351,6 @@ const AddProduct = () => {
                         Select the available colors for the product.
                       </FormDescription>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="images"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Images</FormLabel>
-                      <FormControl></FormControl>
                     </FormItem>
                   )}
                 />
