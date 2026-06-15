@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import {
   ShoppingBasket,
@@ -9,6 +11,8 @@ import {
   Hand,
   ShoppingBag,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const categories = [
   { name: 'All', icon: <ShoppingBasket className="w-5 h-5" />, slug: 'all' },
@@ -39,21 +43,23 @@ export default function HomePage() {
           </div>
 
           <div className="flex-1 max-w-xl hidden lg:block">
-            <input
+            <Input
               type="text"
               placeholder="Search products, brands, and more..."
-              className="search-input"
+              className="rounded-full bg-secondary border-border"
             />
           </div>
 
           <div className="flex items-center gap-6">
             <button className="relative p-2 hover:text-muted-foreground transition-colors">
               <ShoppingBag className="w-5 h-5" />
-              <span className="cart-badge">3</span>
+              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                3
+              </span>
             </button>
-            <button className="text-sm font-medium hover:text-primary transition-colors">
+            <Button variant="ghost" className="text-sm">
               Sign In
-            </button>
+            </Button>
           </div>
         </div>
       </nav>
@@ -61,7 +67,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="relative pt-24 pb-32 px-6 overflow-hidden">
         <div className="max-w-7xl mx-auto text-center relative z-10">
-          <div className="label-micro mb-4 tracking-[0.2em]">Introducing Summer &apos;24</div>
+          <div className="inline-block mb-4 text-xs font-semibold text-primary uppercase tracking-widest">Introducing Summer &apos;24</div>
           <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 max-w-4xl mx-auto leading-[1.1]">
             Shop Smarter,<br />Faster, Better.
           </h1>
@@ -69,18 +75,22 @@ export default function HomePage() {
             Experience the next generation of digital commerce with a high-performance interface designed for speed and clarity.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button className="btn-primary w-full sm:w-auto">Shop Now</button>
-            <button className="btn-secondary w-full sm:w-auto">Browse Categories</button>
+            <Button size="lg">Shop Now</Button>
+            <Button size="lg" variant="outline">
+              Browse Categories
+            </Button>
           </div>
         </div>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-[radial-gradient(circle_at_center,var(--primary)_0%,transparent_70%)] opacity-[0.08] pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-gradient-to-b from-primary/10 to-transparent pointer-events-none" />
       </section>
 
       {/* Featured Categories Marquee */}
       <section className="max-w-7xl mx-auto px-6 py-20">
         <div className="flex items-end justify-between mb-10">
           <div>
-            <div className="label-micro mb-1">Collections</div>
+            <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">
+              Collections
+            </div>
             <h2 className="text-3xl font-bold tracking-tight">Featured Categories</h2>
           </div>
           <Link href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">
@@ -88,16 +98,24 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <div className="marquee-container">
-          <div className="marquee-track">
+        <div className="overflow-hidden mask-image-gradient">
+          <div className="flex gap-4 w-max animate-marquee">
             {categories.map((cat) => (
-              <Link key={cat.slug} href={`/category/${cat.slug}`} className="category-pill">
+              <Link
+                key={cat.slug}
+                href={`/category/${cat.slug}`}
+                className="flex items-center gap-3 px-6 py-4 bg-card border border-border rounded-full whitespace-nowrap hover:bg-secondary hover:scale-105 transition-all flex-shrink-0"
+              >
                 {cat.icon}
                 <span>{cat.name}</span>
               </Link>
             ))}
             {categories.map((cat) => (
-              <Link key={`${cat.slug}-dup`} href={`/category/${cat.slug}`} className="category-pill">
+              <Link
+                key={`${cat.slug}-dup`}
+                href={`/category/${cat.slug}`}
+                className="flex items-center gap-3 px-6 py-4 bg-card border border-border rounded-full whitespace-nowrap hover:bg-secondary hover:scale-105 transition-all flex-shrink-0"
+              >
                 {cat.icon}
                 <span>{cat.name}</span>
               </Link>
@@ -109,19 +127,20 @@ export default function HomePage() {
       {/* Featured Products */}
       <section className="max-w-7xl mx-auto px-6 py-20">
         <div className="mb-10">
-          <div className="label-micro mb-1">Handpicked</div>
+          <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">
+            Handpicked
+          </div>
           <h2 className="text-3xl font-bold tracking-tight">Essential Gear</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Product 1 */}
-          <div className="dash-panel dash-panel-hover overflow-hidden flex flex-col h-full">
-            <div className="aspect-[4/3] bg-secondary relative flex items-center justify-center p-12 border-b border-border">
-              <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,var(--primary),transparent_70%)]" />
+          <div className="bg-card border border-border rounded-lg overflow-hidden flex flex-col h-full hover:shadow-lg hover:-translate-y-1 transition-all">
+            <div className="aspect-[4/3] bg-background relative flex items-center justify-center p-12 border-b border-border">
               <div className="w-full h-full bg-muted rounded-lg border border-border flex items-center justify-center text-muted-foreground italic">
                 Product Image
               </div>
-              <div className="absolute top-4 right-4 label-micro bg-secondary/80 backdrop-blur px-2 py-1 rounded">
+              <div className="absolute top-4 right-4 text-xs font-semibold text-primary bg-background/50 backdrop-blur px-3 py-1 rounded-full">
                 New
               </div>
             </div>
@@ -132,38 +151,42 @@ export default function HomePage() {
                   <p className="text-sm text-muted-foreground">Noise-cancelling, 40h battery</p>
                 </div>
                 <div className="text-right">
-                  <div className="label-micro mb-1">Price</div>
+                  <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">Price</div>
                   <div className="text-2xl font-semibold tracking-tight">$299</div>
                 </div>
               </div>
               <div className="space-y-6 mt-auto">
                 <div className="flex items-center gap-6">
                   <div>
-                    <div className="label-micro mb-2">Size</div>
+                    <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">Size</div>
                     <div className="flex gap-2">
-                      <div className="selector-pill active">STD</div>
-                      <div className="selector-pill">PRO</div>
+                      <button className="px-3 py-1 text-sm border border-border rounded-full bg-foreground text-background hover:opacity-80">
+                        STD
+                      </button>
+                      <button className="px-3 py-1 text-sm border border-border rounded-full hover:bg-secondary">
+                        PRO
+                      </button>
                     </div>
                   </div>
                   <div>
-                    <div className="label-micro mb-2">Color</div>
+                    <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">Color</div>
                     <div className="flex gap-2">
-                      <div className="w-6 h-6 rounded-full bg-foreground border border-foreground" />
-                      <div className="w-6 h-6 rounded-full bg-secondary" />
-                      <div className="w-6 h-6 rounded-full bg-muted" />
+                      <button className="w-6 h-6 rounded-full bg-black border-2 border-white hover:scale-110" />
+                      <button className="w-6 h-6 rounded-full bg-[#333] hover:scale-110" />
+                      <button className="w-6 h-6 rounded-full bg-[#1c1c1c] hover:scale-110" />
                     </div>
                   </div>
                 </div>
-                <button className="w-full btn-secondary border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all">
+                <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground">
                   Add to Cart
-                </button>
+                </Button>
               </div>
             </div>
           </div>
 
           {/* Product 2 */}
-          <div className="dash-panel dash-panel-hover overflow-hidden flex flex-col h-full">
-            <div className="aspect-[4/3] bg-secondary relative flex items-center justify-center p-12 border-b border-border">
+          <div className="bg-card border border-border rounded-lg overflow-hidden flex flex-col h-full hover:shadow-lg hover:-translate-y-1 transition-all">
+            <div className="aspect-[4/3] bg-background relative flex items-center justify-center p-12 border-b border-border">
               <div className="w-full h-full bg-muted rounded-lg border border-border flex items-center justify-center text-muted-foreground italic">
                 Product Image
               </div>
@@ -175,29 +198,35 @@ export default function HomePage() {
                   <p className="text-sm text-muted-foreground">Titanium case, Always-on</p>
                 </div>
                 <div className="text-right">
-                  <div className="label-micro mb-1">Price</div>
+                  <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">Price</div>
                   <div className="text-2xl font-semibold tracking-tight">$449</div>
                 </div>
               </div>
               <div className="space-y-6 mt-auto">
                 <div>
-                  <div className="label-micro mb-2">Wrist Size</div>
+                  <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">Wrist Size</div>
                   <div className="flex gap-2">
-                    <div className="selector-pill">S</div>
-                    <div className="selector-pill active">M</div>
-                    <div className="selector-pill">L</div>
+                    <button className="px-3 py-1 text-sm border border-border rounded-full hover:bg-secondary">
+                      S
+                    </button>
+                    <button className="px-3 py-1 text-sm border border-border rounded-full bg-foreground text-background hover:opacity-80">
+                      M
+                    </button>
+                    <button className="px-3 py-1 text-sm border border-border rounded-full hover:bg-secondary">
+                      L
+                    </button>
                   </div>
                 </div>
-                <button className="w-full btn-secondary border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all">
+                <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground">
                   Add to Cart
-                </button>
+                </Button>
               </div>
             </div>
           </div>
 
           {/* Product 3 */}
-          <div className="dash-panel dash-panel-hover overflow-hidden flex flex-col h-full">
-            <div className="aspect-[4/3] bg-secondary relative flex items-center justify-center p-12 border-b border-border">
+          <div className="bg-card border border-border rounded-lg overflow-hidden flex flex-col h-full hover:shadow-lg hover:-translate-y-1 transition-all">
+            <div className="aspect-[4/3] bg-background relative flex items-center justify-center p-12 border-b border-border">
               <div className="w-full h-full bg-muted rounded-lg border border-border flex items-center justify-center text-muted-foreground italic">
                 Product Image
               </div>
@@ -209,22 +238,28 @@ export default function HomePage() {
                   <p className="text-sm text-muted-foreground">M3 Chip, 13&quot; Retina display</p>
                 </div>
                 <div className="text-right">
-                  <div className="label-micro mb-1">Price</div>
+                  <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">Price</div>
                   <div className="text-2xl font-semibold tracking-tight">$899</div>
                 </div>
               </div>
               <div className="space-y-6 mt-auto">
                 <div>
-                  <div className="label-micro mb-2">Storage</div>
+                  <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">Storage</div>
                   <div className="flex gap-2">
-                    <div className="selector-pill active">256GB</div>
-                    <div className="selector-pill">512GB</div>
-                    <div className="selector-pill">1TB</div>
+                    <button className="px-3 py-1 text-sm border border-border rounded-full bg-foreground text-background hover:opacity-80">
+                      256GB
+                    </button>
+                    <button className="px-3 py-1 text-sm border border-border rounded-full hover:bg-secondary">
+                      512GB
+                    </button>
+                    <button className="px-3 py-1 text-sm border border-border rounded-full hover:bg-secondary">
+                      1TB
+                    </button>
                   </div>
                 </div>
-                <button className="w-full btn-secondary border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-all">
+                <Button variant="outline" className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground">
                   Add to Cart
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -233,39 +268,41 @@ export default function HomePage() {
 
       {/* Deals Banner */}
       <section className="max-w-7xl mx-auto px-6 py-10">
-        <div className="bg-primary text-primary-foreground p-12 md:p-16 flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden rounded-3xl">
+        <div className="bg-primary text-primary-foreground p-12 md:p-16 rounded-lg flex flex-col md:flex-row items-center justify-between gap-8 relative overflow-hidden">
           <div className="relative z-10">
-            <div className="text-xs font-bold uppercase tracking-widest opacity-60 mb-2">Limited Time Offer</div>
+            <div className="text-xs font-bold uppercase tracking-widest opacity-70 mb-2">Limited Time Offer</div>
             <h2 className="text-4xl md:text-5xl font-bold tracking-tighter mb-4">Summer Speed Sale</h2>
-            <p className="text-lg font-medium opacity-80 max-w-lg">Get up to 40% off on all selected audio gear. Fast delivery guaranteed.</p>
+            <p className="text-lg font-medium opacity-90 max-w-lg">
+              Get up to 40% off on all selected audio gear. Fast delivery guaranteed.
+            </p>
           </div>
-          <button className="relative z-10 bg-primary-foreground text-primary px-10 py-4 rounded-full font-bold hover:scale-105 transition-transform">
+          <Button className="relative z-10 bg-background text-foreground hover:bg-background/90 px-10 py-6 text-base">
             Get the Deal
-          </button>
-          <div className="absolute right-0 top-0 h-full w-1/2 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.2))] skew-x-12 translate-x-20" />
+          </Button>
+          <div className="absolute right-0 top-0 h-full w-1/2 bg-gradient-to-r from-transparent to-white/10 skew-x-12 translate-x-20" />
         </div>
       </section>
 
       {/* Trust Section */}
       <section className="max-w-7xl mx-auto px-6 py-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="dash-panel p-8 text-center sm:text-left">
-            <div className="label-micro mb-4">Logistics</div>
+          <div className="bg-card border border-border rounded-lg p-8 text-center sm:text-left">
+            <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-4">Logistics</div>
             <h4 className="text-lg font-semibold mb-2">Fast Delivery</h4>
             <p className="text-sm text-muted-foreground">Free shipping on all orders over $150.</p>
           </div>
-          <div className="dash-panel p-8 text-center sm:text-left">
-            <div className="label-micro mb-4">Safety</div>
+          <div className="bg-card border border-border rounded-lg p-8 text-center sm:text-left">
+            <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-4">Safety</div>
             <h4 className="text-lg font-semibold mb-2">Secure Payment</h4>
             <p className="text-sm text-muted-foreground">100% encrypted checkout process.</p>
           </div>
-          <div className="dash-panel p-8 text-center sm:text-left">
-            <div className="label-micro mb-4">Policy</div>
+          <div className="bg-card border border-border rounded-lg p-8 text-center sm:text-left">
+            <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-4">Policy</div>
             <h4 className="text-lg font-semibold mb-2">Easy Returns</h4>
             <p className="text-sm text-muted-foreground">30-day no-questions return policy.</p>
           </div>
-          <div className="dash-panel p-8 text-center sm:text-left">
-            <div className="label-micro mb-4">Contact</div>
+          <div className="bg-card border border-border rounded-lg p-8 text-center sm:text-left">
+            <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-4">Contact</div>
             <h4 className="text-lg font-semibold mb-2">24/7 Support</h4>
             <p className="text-sm text-muted-foreground">Round-the-clock expert assistance.</p>
           </div>
@@ -274,16 +311,14 @@ export default function HomePage() {
 
       {/* Newsletter */}
       <section className="max-w-3xl mx-auto px-6 py-32 text-center">
-        <div className="label-micro mb-4">Updates</div>
+        <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-4">Updates</div>
         <h2 className="text-3xl font-bold mb-6">Stay in the Loop</h2>
-        <p className="text-muted-foreground mb-10">Subscribe to receive first access to product drops and exclusive member-only deals.</p>
+        <p className="text-muted-foreground mb-10">
+          Subscribe to receive first access to product drops and exclusive member-only deals.
+        </p>
         <form className="flex flex-col sm:flex-row gap-3">
-          <input
-            type="email"
-            placeholder="email@example.com"
-            className="search-input flex-1 py-4"
-          />
-          <button type="submit" className="btn-primary">Subscribe</button>
+          <Input type="email" placeholder="email@example.com" className="flex-1" />
+          <Button type="submit">Subscribe</Button>
         </form>
       </section>
 
@@ -300,7 +335,7 @@ export default function HomePage() {
               </p>
             </div>
             <div>
-              <h5 className="label-micro mb-6">Company</h5>
+              <h5 className="text-xs font-semibold text-primary uppercase tracking-widest mb-6">Company</h5>
               <ul className="space-y-4 text-sm text-muted-foreground">
                 <li><Link href="#" className="hover:text-foreground transition-colors">About</Link></li>
                 <li><Link href="#" className="hover:text-foreground transition-colors">Careers</Link></li>
@@ -308,7 +343,7 @@ export default function HomePage() {
               </ul>
             </div>
             <div>
-              <h5 className="label-micro mb-6">Support</h5>
+              <h5 className="text-xs font-semibold text-primary uppercase tracking-widest mb-6">Support</h5>
               <ul className="space-y-4 text-sm text-muted-foreground">
                 <li><Link href="#" className="hover:text-foreground transition-colors">Contact</Link></li>
                 <li><Link href="#" className="hover:text-foreground transition-colors">Help Center</Link></li>
@@ -316,7 +351,7 @@ export default function HomePage() {
               </ul>
             </div>
             <div>
-              <h5 className="label-micro mb-6">Legal</h5>
+              <h5 className="text-xs font-semibold text-primary uppercase tracking-widest mb-6">Legal</h5>
               <ul className="space-y-4 text-sm text-muted-foreground">
                 <li><Link href="#" className="hover:text-foreground transition-colors">Privacy</Link></li>
                 <li><Link href="#" className="hover:text-foreground transition-colors">Terms</Link></li>
