@@ -67,7 +67,12 @@ const AddProduct = () => {
     try {
       setIsSubmitting(true);
       console.log(data);
-      await createProduct(data);
+      // Convert price from dollars to cents
+      const formattedData = {
+        ...data,
+        price: Math.round(data.price * 100),
+      };
+      await createProduct(formattedData);
       toast.success("Product created successfully!");
     } catch (error) {
       toast.error("Failed to create product!");
@@ -95,6 +100,7 @@ const AddProduct = () => {
       );
 
       const data = await res.json();
+      console.log(data);
       if (data.secure_url) {
         const currentImages = form.getValues("images") || {};
         form.setValue("images", {
@@ -189,7 +195,7 @@ const AddProduct = () => {
                         />
                       </FormControl>
                       <FormDescription>
-                        Enter the price of the product.
+                        Enter the price of the product in dollars (e.g., 19.99).
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -332,7 +338,7 @@ const AddProduct = () => {
                                       handleImageUpload(e, color)
                                     }
                                   />
-                                  {field.value?.[color] ? (
+                                  {form.getValues("images")?.[color] ? (
                                     <span className="text-green-600 text-sm">
                                       Image uploaded
                                     </span>

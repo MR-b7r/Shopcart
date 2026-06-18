@@ -13,7 +13,7 @@ const useCartStore = create<CartStoreStateType & CartStoreActionsType>()(
             (p) =>
               p.id === product.id &&
               p.selectedSize === product.selectedSize &&
-              p.selectedColor === product.selectedColor
+              p.selectedColor === product.selectedColor,
           );
           if (existingIndex !== -1) {
             const updateCart = [...state.cart];
@@ -40,9 +40,29 @@ const useCartStore = create<CartStoreStateType & CartStoreActionsType>()(
                 p.id === product.id &&
                 p.selectedSize === product.selectedSize &&
                 p.selectedColor === product.selectedColor
-              )
+              ),
           ),
         })),
+      updateQuantity: (product, newQuantity) =>
+        set((state) => {
+          const existingIndex = state.cart.findIndex(
+            (p) =>
+              p.id === product.id &&
+              p.selectedSize === product.selectedSize &&
+              p.selectedColor === product.selectedColor,
+          );
+          if (existingIndex !== -1) {
+            if (newQuantity <= 0) {
+              return {
+                cart: state.cart.filter((_, idx) => idx !== existingIndex),
+              };
+            }
+            const updateCart = [...state.cart];
+            updateCart[existingIndex].quantity = newQuantity;
+            return { cart: updateCart };
+          }
+          return { cart: state.cart };
+        }),
       clearCart: () => set({ cart: [] }),
     }),
     {
@@ -51,7 +71,7 @@ const useCartStore = create<CartStoreStateType & CartStoreActionsType>()(
       onRehydrateStorage: () => (state) => {
         if (state) state.hasHydrated = true;
       },
-    }
-  )
+    },
+  ),
 );
 export default useCartStore;

@@ -26,7 +26,7 @@ export default function ClientLayout({
 }>) {
   return (
     <>
-      <div className="p-4 sm:px-0 mx-auto sm:max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-6xl">
+      <div className="p-4 sm:px-0 mx-auto max-w-7xl">
         <Navbar />
         {children}
         <Footer />

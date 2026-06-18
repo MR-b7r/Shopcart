@@ -4,12 +4,38 @@ import { Prisma } from "@prisma/client";
 import { parseStringify } from "../utils";
 import { shouldBeAdmin } from "./payment.actions";
 import { startOfMonth, subMonths } from "date-fns";
-import { OrderChartType } from "../types";
+import { OrderChartType, ProductType } from "../types";
+
+import { render } from "@react-email/render";
+import OrderConfirmation from "@/components/OrderConfirmation";
+import { resend } from "@/lib/resend";
 
 export const createOrder = async (data: Prisma.OrderCreateInput) => {
-  const newOrder = await db.order.create({ data });
+  try {
+    // Validate required fields
+    if (!data.userId) throw new Error("userId is required");
+    if (!data.email) throw new Error("email is required");
+    if (data.amount === undefined || data.amount === null)
+      throw new Error("amount is required");
 
-  return parseStringify(newOrder);
+    console.log("Creating order with data:", JSON.stringify(data, null, 2));
+
+    const newOrder = await db.order.create({
+      data: {
+        userId: data.userId as string,
+        email: data.email as string,
+        amount: data.amount as number,
+        status: (data.status as any) || "failed",
+        products: data.products,
+      },
+    });
+
+    console.log("Order created successfully:", newOrder);
+    return parseStringify(newOrder);
+  } catch (error: any) {
+    console.error("Error creating order:", error.message, error);
+    throw error;
+  }
 };
 
 export const getOrders = async (limit?: number) => {
@@ -156,3 +182,30 @@ export const orderChart = async () => {
 
   return parseStringify(results);
 };
+
+export async function sendOrderEmail(
+  email: string,
+  orderProducts: any[],
+  totalAmount: number,
+) {
+  try {
+    console.log("Before sending email to:", email);
+    const { data, error } = await resend.emails.send({
+      from: "ShopCart <onboarding@resend.dev>",
+      to: email,
+      subject: "Order Confirmed",
+      react: OrderConfirmation({
+        customerEmail: email,
+        products: orderProducts,
+        totalAmount,
+      }),
+    });
+    if (error) {
+      console.log("RESEND ERROR:", error);
+    }
+    console.log("After sending email to:", email);
+    return parseStringify(data);
+  } catch (error) {
+    return Response.json({ error }, { status: 500 });
+  }
+}

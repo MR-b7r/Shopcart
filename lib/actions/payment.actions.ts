@@ -29,14 +29,28 @@ export async function createStripeProduct(item) {
   const product = await stripe.products.create({
     id: item.id,
     name: item.name,
+    metadata: {
+      productId: item.id,
+    },
     default_price_data: {
       currency: "usd",
-      unit_amount: item.price * 100,
+      unit_amount: item.price,
+      metadata: {
+        productId: item.id,
+      },
     },
   });
 
   return parseStringify(product);
 }
+
+// export async function getStripeProduct(item) {
+//   const product = await stripe.products.retrieve(item.id, {
+//     expand: ["default_price"],
+//   });
+
+//   return parseStringify(product);
+// }
 
 export async function getStripeProductPrice(productId: string) {
   try {
@@ -65,7 +79,6 @@ export async function createCheckoutSession({
   cart: CartItemType[];
   userId: string;
 }) {
-  console.log("createCheckoutSession called with:", userId);
   const lineItems = await Promise.all(
     cart.map(async (item) => {
       const unitAmount = await getStripeProductPrice(item.id);
@@ -74,8 +87,11 @@ export async function createCheckoutSession({
           currency: "usd",
           product_data: {
             name: item.name,
+            metadata: {
+              productId: item.id, // ✅ here
+            },
           },
-          unit_amount: unitAmount as number,
+          unit_amount: (unitAmount as number) ?? 0,
         },
         quantity: item.quantity,
       };
@@ -89,5 +105,6 @@ export async function createCheckoutSession({
     ui_mode: "custom",
     return_url: `${process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
   });
+
   return parseStringify({ checkoutSessionClientSecret: session.client_secret });
 }

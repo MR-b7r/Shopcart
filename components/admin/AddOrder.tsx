@@ -27,24 +27,82 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { toast } from "react-toastify";
 
 const formSchema = z.object({
   amount: z.number().min(1, { message: "Amount must be at least 1!" }),
   userId: z.string().min(1, { message: "User Id is required!" }),
-  status: z.enum(["pending", "processing", "success", "failed"]),
+  status: z.enum(["success", "failed"]),
 });
 
-const EditUser = () => {
+const EditUser = ({ onClose }: { onClose?: () => void }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      amount: 0,
+      userId: "",
+      status: "success",
+    },
   });
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    setIsSubmitting(true);
+    try {
+      console.log("Submitting order with values:", values);
+
+      const orderData = {
+        userId: values.userId,
+        amount: values.amount * 100,
+        status: values.status,
+        email: "haithamb74@gmail.com",
+      };
+
+      console.log("Sending to API:", orderData);
+
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+      });
+
+      const responseData = await res.json();
+
+      if (!res.ok) {
+        const errorMsg =
+          responseData.message ||
+          responseData.error ||
+          "Failed to create order";
+        console.error("API Error:", errorMsg);
+        throw new Error(errorMsg);
+      }
+
+      console.log("Order created successfully:", responseData);
+      toast.success("Order created successfully!");
+      form.reset();
+      onClose?.();
+    } catch (error: any) {
+      console.error("Error creating order:", error);
+      const errorMsg = error.message || "Failed to create order";
+      toast.error(errorMsg);
+      form.setError("root", {
+        message: errorMsg,
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <SheetContent>
       <SheetHeader>
         <SheetTitle className="mb-4">Add Order</SheetTitle>
         <SheetDescription asChild>
           <Form {...form}>
-            <form className="space-y-8">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <FormField
                 control={form.control}
                 name="amount"
@@ -52,7 +110,11 @@ const EditUser = () => {
                   <FormItem>
                     <FormLabel>Amount</FormLabel>
                     <FormControl>
-                      <Input {...field} />
+                      <Input
+                        {...field}
+                        type="number"
+                        onChange={(e) => field.onChange(Number(e.target.value))}
+                      />
                     </FormControl>
                     <FormDescription>
                       Enter the amount of the order.
@@ -82,13 +144,14 @@ const EditUser = () => {
                   <FormItem>
                     <FormLabel>Status</FormLabel>
                     <FormControl>
-                      <Select>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select a status" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="processing">Processing</SelectItem>
                           <SelectItem value="success">Success</SelectItem>
                           <SelectItem value="failed">Failed</SelectItem>
                         </SelectContent>
@@ -101,7 +164,14 @@ const EditUser = () => {
                   </FormItem>
                 )}
               />
-              <Button type="submit">Submit</Button>
+              {form.formState.errors.root && (
+                <div className="text-red-500 text-sm">
+                  {form.formState.errors.root.message}
+                </div>
+              )}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </Button>
             </form>
           </Form>
         </SheetDescription>

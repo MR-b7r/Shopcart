@@ -137,24 +137,16 @@ const ProductList = async ({
   });
   return (
     <div className="w-full">
-      <Categories />
+      {/* <Categories /> */}
       {params === "products" && (
         <Filter filterType="sort" defaultValue="newest" />
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
       </div>
-     {params === "homepage" && (
-        <Link
-          href={category ? `/products/?category=${category}` : "/products"}
-          className="flex justify-end mt-4 underline text-sm text-gray-500"
-        >
-          View all products
-        </Link>
-      )}
     </div>
   );
 };

@@ -8,7 +8,7 @@ import CheckoutForm from "./CheckoutForm";
 import useCartStore from "@/stores/cartStore";
 
 const stripe = loadStripe(
-  "pk_test_51ShVvX6AtuRIc0MX5YF3HCD9ZlxHGCVhx5Pvlu5Aq8rnvzMw3CG6bItipSWN5yCeDgjlEy3vIQnO1aEmUMcSNmOJ00qCTZFoG1"
+  "pk_test_51ShVvX6AtuRIc0MX5YF3HCD9ZlxHGCVhx5Pvlu5Aq8rnvzMw3CG6bItipSWN5yCeDgjlEy3vIQnO1aEmUMcSNmOJ00qCTZFoG1",
 );
 
 const fetchClientSecret = async (cart: CartItemType[], token: string) => {
@@ -26,7 +26,7 @@ const fetchClientSecret = async (cart: CartItemType[], token: string) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-    }
+    },
   );
 
   if (!res.ok) {
@@ -55,7 +55,7 @@ const StripePaymentForm = ({
   useEffect(() => {
     getToken().then((token) => setToken(token));
   }, []);
-
+  console.log(shippingForm, token, cart);
   if (!token) {
     return <div className="">Loading...</div>;
   }

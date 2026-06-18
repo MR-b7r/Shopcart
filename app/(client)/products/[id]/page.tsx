@@ -70,7 +70,9 @@ const page = async ({
       <div className="w-full lg:w-7/12 flex flex-col gap-4">
         <h1 className="text-2xl font-medium">{product.name}</h1>
         <p className="text-gray-500">{product.description}</p>
-        <h2 className="text-2xl font-semibold">${product.price.toFixed(2)}</h2>
+        <h2 className="text-2xl font-semibold">
+          ${(product.price / 100).toFixed(2)}
+        </h2>
         <ProductInteraction
           product={product}
           selectedSize={selectedSize}

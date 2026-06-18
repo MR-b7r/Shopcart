@@ -11,7 +11,9 @@ export async function GET(
       expand: ["line_items"],
     });
     return NextResponse.json(
-      { status: session.status, paymentStatus: session.payment_status },
+      {
+        session,
+      },
       { status: 201 },
     );
   } catch (error: any) {

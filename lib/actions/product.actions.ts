@@ -34,7 +34,14 @@ export const createProduct = async (data: Prisma.ProductCreateInput) => {
   return parseStringify(product);
 };
 
-export const getProducts = async (filter) => {
+type ProductFilter = {
+  sort?: "asc" | "desc" | "oldest";
+  category?: string;
+  search?: string;
+  limit?: number | string;
+};
+
+export const getProducts = async (filter: ProductFilter) => {
   const { sort, category, search, limit } = filter;
   const orderBy = () => {
     switch (sort) {

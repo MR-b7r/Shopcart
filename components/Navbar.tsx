@@ -8,34 +8,41 @@ import ProfileButton from "./ProfileButton ";
 
 const Navbar = () => {
   return (
-    <nav className="w-full flex items-center justify-between border-b border-gray-200 pb-4">
-      {/* LEFT */}
-      <Link href="/" className="flex items-center">
-        <Image
-          src="/logo.png"
-          alt="Shopcart Logo"
-          width={36}
-          height={36}
-          className="w-6 h-6 md:w-9 md:h-9"
-        />
-        <p className="hidden md:block text-md font-medium tracking-wider">
-          ShopCart
-        </p>
-      </Link>
-      {/* RIGHT */}
-      <div className="flex items-center gap-6">
+    <nav className="sticky top-0 z-50 bg-background/80 backdrop-blur-md border-b border-border">
+      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between gap-8">
+        <div className="flex items-center gap-12">
+          <Link href="/" className="text-xl font-bold tracking-tighter">
+            SHOP<span className="text-primary">CART</span>
+          </Link>
+          <div className="hidden md:flex gap-6 text-sm font-medium text-muted-foreground">
+            <Link
+              href="/products"
+              className="hover:text-foreground transition-colors"
+            >
+              New Arrivals
+            </Link>
+            <Link
+              href="/products"
+              className="hover:text-foreground transition-colors"
+            >
+              Categories
+            </Link>
+            <Link href="#" className="hover:text-foreground transition-colors">
+              Discounts
+            </Link>
+          </div>
+        </div>
+
         <SearchBar />
-        <Link href="/">
-          <Home className="w-4 h-4 text-gray-600" />
-        </Link>
-        <Bell className="w-4 h-4 text-gray-600" />
-        <ShoppingCartIcon />{" "}
-        <SignedOut>
-          <SignInButton />
-        </SignedOut>
-        <SignedIn>
-          <ProfileButton />
-        </SignedIn>
+        <div className="flex items-center gap-6">
+          <ShoppingCartIcon />
+          <SignedOut>
+            <SignInButton />
+          </SignedOut>
+          <SignedIn>
+            <ProfileButton />
+          </SignedIn>
+        </div>
       </div>
     </nav>
   );

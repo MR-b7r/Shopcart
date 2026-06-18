@@ -1,7 +1,7 @@
 "use client";
 import useCartStore from "@/stores/cartStore";
 import { ProductType } from "@/lib/types";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingBag, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
@@ -38,71 +38,97 @@ const ProductCard = ({ product }: { product: ProductType }) => {
   };
 
   return (
-    <div className="shadow-lg rounded-lg overflow-hidden">
-      <Link href={`/products/${product.id}`}>
-        <div className="relative aspect-[2/3]">
+    <div className="bg-card border border-border rounded-lg overflow-hidden flex flex-col h-full hover:shadow-lg hover:-translate-y-1 transition-all">
+      <div className="aspect-[4/3] bg-background relative flex items-center justify-center p-6 border-b border-border">
+        <div className="bg-muted rounded-lg border border-border flex items-center justify-center">
           <Image
             src={
               (product.images as Record<string, string>)?.[productTypes.color]
             }
             alt={product.name}
             fill
-            className="object-cover hover:scale-105 transition-all duration-300"
+            className="object-cover"
           />
         </div>
-      </Link>
-
-      <div className="flex flex-col p-4 gap-4">
-        <h1 className="font-medium">{product.name}</h1>
-        <p className="text-sm text-gray-500">{product.shortDescription}</p>
-
-        <div className="flex items-center gap-4 text-xs">
-          <div className="flex flex-col gap-1">
-            <span className="text-gray-500">Size</span>
-            <select
-              className="ring ring-gray-300 rounded-md px-2 py-1"
-              name="size"
-              id="size"
-              onChange={(e) =>
-                handleProductType({ type: "size", value: e.target.value })
-              }
-            >
-              {product.sizes.map((size) => (
-                <option key={size} value={size}>
-                  {size.toUpperCase()}
-                </option>
-              ))}
-            </select>
+        <div className="absolute top-4 right-4 text-xs font-semibold text-primary bg-background/50 backdrop-blur px-3 py-1 rounded-full">
+          New
+        </div>
+      </div>
+      <div className="p-8 flex flex-col flex-1">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h3 className="text-xl font-semibold mb-1">{product.name}</h3>
+            <p className="text-sm text-muted-foreground">
+              {product.shortDescription}
+            </p>
           </div>
-          <div className="flex flex-col gap-1">
-            <span className="text-gray-500">Color</span>
-            <div className="flex items-center gap-2">
-              {product.colors.map((color) => (
-                <div
-                  key={color}
-                  className={`cursor-pointer border-1 rounded-full p-[1.2px] ${
-                    productTypes.color === color
-                      ? "border-gray-400"
-                      : "border-gray-200"
-                  }`}
-                  onClick={() =>
-                    handleProductType({ type: "color", value: color })
-                  }
-                >
-                  <div
-                    className="w-[14px] h-[14px] rounded-full"
-                    style={{ backgroundColor: color }}
-                  />
-                </div>
-              ))}
+          <div className="text-right">
+            <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">
+              Price
+            </div>
+            <div className="text-xl font-semibold tracking-tight">
+              ${product.price.toFixed(2)}
             </div>
           </div>
         </div>
-        <div className="flex items-center justify-between">
-          <p className="font-medium">${product.price.toFixed(2)}</p>
-          <Button onClick={handleAddToCart} size={"sm"}>
-            <ShoppingCart className="w-4 h-4" />
+        <div className="space-y-6 mt-auto">
+          <div className="flex items-center gap-6">
+            <div>
+              <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
+                Size
+              </div>
+              <select
+                className="ring ring-gray-300 rounded-md px-2 py-1"
+                name="size"
+                id="size"
+                onChange={(e) =>
+                  handleProductType({ type: "size", value: e.target.value })
+                }
+              >
+                {product.sizes.map((size) => (
+                  <option
+                    key={size}
+                    value={size}
+                    className="px-3 py-1 text-sm border border-border rounded-full bg-foreground text-background hover:opacity-80"
+                  >
+                    {size.toUpperCase()}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-2">
+                Color
+              </div>
+              <div className="flex gap-2">
+                {product.colors.map((color) => (
+                  <div
+                    key={color}
+                    className={`w-6 h-6 rounded-full border-2 hover:scale-110 ${
+                      productTypes.color === color
+                        ? "border-gray-400"
+                        : "border-gray-200"
+                    }`}
+                    onClick={() =>
+                      handleProductType({ type: "color", value: color })
+                    }
+                  >
+                    <div
+                      className="rounded-full w-full h-full"
+                      style={{ backgroundColor: color }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          <Button
+            variant="outline"
+            className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+            onClick={handleAddToCart}
+          >
             Add to Cart
+            <ShoppingBag className="w-5 h-5" />
           </Button>
         </div>
       </div>

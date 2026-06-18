@@ -11,6 +11,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 const categories = [
   {
@@ -64,29 +65,55 @@ const Categories = () => {
   function handleChange(category: string) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("category", category || "all");
-    router.push(`${pathname}?${params.toString()}`, { scroll: false });
+    router.push(`products?${params.toString()}`, { scroll: false });
   }
   return (
-    <ToggleGroup
-      type="single"
-      variant="outline"
-      spacing={2}
-      size="sm"
-      className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 p-2 mb-4 place-self-center"
-    >
-      {categories.map((category) => (
-        <ToggleGroupItem
-          value={category.slug}
-          aria-label={category.name}
-          className="data-[state=on]:bg-transparent data-[state=on]:*:[svg]:fill-yellow-500 data-[state=on]:*:[svg]:stroke-yellow-500"
-          key={category.name}
-          onClick={() => handleChange(category.slug)}
+    <section className="max-w-7xl mx-auto px-6 py-20">
+      <div className="flex items-end justify-between mb-10">
+        <div>
+          <div className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">
+            Collections
+          </div>
+          <h2 className="text-3xl font-bold tracking-tight">
+            Featured Categories
+          </h2>
+        </div>
+        <Link
+          href="/products"
+          className="text-sm text-muted-foreground hover:text-primary transition-colors"
         >
-          {category.icon}
-          {category.name}
-        </ToggleGroupItem>
-      ))}
-    </ToggleGroup>
+          View All Categories
+        </Link>
+      </div>
+
+      <div className="overflow-hidden marquee-container">
+        <div
+          className="flex gap-4 w-max 
+          marquee-track"
+        >
+          {categories.map((cat) => (
+            <div
+              key={cat.slug}
+              onClick={() => handleChange(cat.slug)}
+              className="flex items-center gap-3 px-6 py-4 bg-card border border-border rounded-full whitespace-nowrap hover:bg-secondary hover:scale-105 transition-all flex-shrink-0"
+            >
+              {cat.icon}
+              <span>{cat.name}</span>
+            </div>
+          ))}
+          {categories.map((cat) => (
+            <div
+              key={`${cat.slug}-dup`}
+              onClick={() => handleChange(cat.slug)}
+              className="flex items-center gap-3 px-6 py-4 bg-card border border-border rounded-full whitespace-nowrap hover:bg-secondary hover:scale-105 transition-all flex-shrink-0"
+            >
+              {cat.icon}
+              <span>{cat.name}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 };
 
