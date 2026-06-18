@@ -1,109 +1,176 @@
-'use client';
+"use client";
 
-import { Minus, Plus, Trash2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-
-interface CartItem {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  quantity: number;
-  selectedOptions: {
-    size?: string;
-    color?: string;
-  };
-  image?: string;
-}
+import { CheckCircle2, Minus, Plus, Tag, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EmptyCart } from "./EmptyCart";
+import { CartItemType } from "@/lib/types/cart";
+import useCartStore from "@/stores/cartStore";
+import { useState } from "react";
 
 interface CartItemCardProps {
-  item: CartItem;
-  onQuantityChange: (id: string, quantity: number) => void;
-  onRemove: (id: string) => void;
+  items: CartItemType[];
+  isEmpty: boolean;
+  totalItems: number;
+  promoCode: string;
+  setPromoCode: (code: string) => void;
+  handleApplyPromo: () => void;
+  promoApplied: boolean;
 }
 
-export function CartItemCard({ item, onQuantityChange, onRemove }: CartItemCardProps) {
-  const total = item.price * item.quantity;
-
+export function CartItemCard({
+  items,
+  isEmpty,
+  totalItems,
+  promoCode,
+  setPromoCode,
+  handleApplyPromo,
+  promoApplied,
+}: CartItemCardProps) {
+  const { removeFromCart, updateQuantity } = useCartStore();
+  const handleUpdateQuantity = (item: CartItemType, delta: number) => {
+    const newQuantity = item.quantity + delta;
+    if (newQuantity > 0) {
+      updateQuantity(item, newQuantity);
+    }
+  };
   return (
-    <div className="bg-card border border-border rounded-lg p-6 hover:shadow-md transition-shadow">
-      <div className="flex flex-col sm:flex-row gap-6">
-        {/* Product Image */}
-        <div className="flex-shrink-0 w-full sm:w-32 h-32 bg-secondary rounded-lg border border-border flex items-center justify-center">
-          {item.image ? (
-            <img src={item.image} alt={item.name} className="w-full h-full object-cover rounded" />
-          ) : (
-            <div className="text-muted-foreground italic text-sm">Product Image</div>
-          )}
-        </div>
+    <>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-foreground">Shopping Cart</h2>
+        <span className="text-xs font-semibold bg-muted text-muted-foreground px-2.5 py-1 rounded-full uppercase tracking-wide">
+          {totalItems} {totalItems === 1 ? "item" : "items"}
+        </span>
+      </div>
 
-        {/* Product Details */}
-        <div className="flex-1 flex flex-col justify-between">
-          <div>
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <p className="text-xs text-primary font-semibold uppercase tracking-widest mb-1">
-                  {item.category}
-                </p>
-                <h3 className="text-lg font-semibold text-foreground">{item.name}</h3>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-muted-foreground mb-1">Price</p>
-                <p className="text-xl font-bold text-primary">${item.price.toFixed(2)}</p>
-              </div>
-            </div>
+      {isEmpty && <EmptyCart />}
 
-            {/* Options */}
-            <div className="flex flex-wrap gap-4 mb-4">
-              {item.selectedOptions.size && (
-                <div>
-                  <p className="text-xs text-muted-foreground font-medium">Size: {item.selectedOptions.size}</p>
-                </div>
-              )}
-              {item.selectedOptions.color && (
-                <div className="flex items-center gap-2">
-                  <p className="text-xs text-muted-foreground font-medium">Color:</p>
-                  <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: item.selectedOptions.color }} />
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Quantity & Actions */}
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-            {/* Quantity Selector */}
-            <div className="flex items-center gap-3 bg-secondary rounded-lg p-1">
-              <button
-                onClick={() => onQuantityChange(item.id, Math.max(1, item.quantity - 1))}
-                className="p-1 hover:bg-background rounded transition-colors"
-              >
-                <Minus className="w-4 h-4 text-foreground" />
-              </button>
-              <span className="w-8 text-center font-semibold text-foreground">{item.quantity}</span>
-              <button
-                onClick={() => onQuantityChange(item.id, item.quantity + 1)}
-                className="p-1 hover:bg-background rounded transition-colors"
-              >
-                <Plus className="w-4 h-4 text-foreground" />
-              </button>
-            </div>
-
-            {/* Subtotal */}
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground mb-1">Subtotal</p>
-              <p className="text-lg font-bold text-foreground">${total.toFixed(2)}</p>
-            </div>
-
-            {/* Remove Button */}
-            <button
-              onClick={() => onRemove(item.id)}
-              className="p-2 hover:bg-destructive/10 rounded-lg transition-colors group"
+      {/* Cart Item Cards */}
+      {!isEmpty && (
+        <div className="flex flex-col gap-4">
+          {items.map((item) => (
+            <article
+              key={item.id + item.selectedSize + item.selectedColor}
+              className="bg-card border border-border rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow duration-200"
             >
-              <Trash2 className="w-5 h-5 text-muted-foreground group-hover:text-destructive" />
+              <div className="flex gap-4 items-start">
+                <div className="w-20 h-20 rounded-lg overflow-hidden bg-muted flex-shrink-0 border border-border">
+                  <img
+                    src={
+                      (item.images as Record<string, string>)?.[
+                        item.selectedColor
+                      ]
+                    }
+                    alt={item.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                {/* Product Details */}
+                <div className="flex-1 min-w-0 flex flex-col gap-2">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <h3 className="text-base font-semibold text-foreground leading-snug">
+                        {item.name}
+                      </h3>
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide mt-0.5">
+                        {item.shortDescription}
+                      </p>
+                    </div>
+                    <p className="text-lg font-bold text-foreground flex-shrink-0">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-muted/40 border border-border rounded-md text-xs text-foreground">
+                      <span className="text-muted-foreground">Size</span>
+                      <span className="font-medium">{item.selectedSize}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-muted/40 border border-border rounded-md text-xs text-foreground">
+                      <span
+                        className="w-3 h-3 rounded-full border border-border flex-shrink-0"
+                        style={{
+                          backgroundColor: item.selectedColor,
+                        }}
+                      />
+                      <span className="font-medium">{item.selectedColor}</span>
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between mt-1">
+                    <div className="flex items-center gap-2">
+                      <div className="flex items-center border border-border rounded-md overflow-hidden bg-background">
+                        <button
+                          onClick={() => handleUpdateQuantity(item, -1)}
+                          aria-label="Decrease quantity"
+                          className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors duration-150 active:scale-95"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                        <span className="min-w-[2rem] text-center text-sm font-semibold text-foreground px-1">
+                          {item.quantity}
+                        </span>
+                        <button
+                          onClick={() => handleUpdateQuantity(item, 1)}
+                          aria-label="Increase quantity"
+                          className="w-8 h-8 flex items-center justify-center text-muted-foreground hover:bg-muted transition-colors duration-150 active:scale-95"
+                        >
+                          <Plus className="w-3 h-3" />
+                        </button>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        ${item.price.toFixed(2)} each
+                      </span>
+                    </div>
+
+                    {/* Remove Button */}
+                    <button
+                      onClick={() => removeFromCart(item)}
+                      aria-label={`Remove ${item.name}`}
+                      className="w-8 h-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-150"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+
+      {/* Promo Code Row */}
+      {!isEmpty && (
+        <div className="bg-card border border-border rounded-xl p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Tag className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">
+              Promo Code
+            </span>
+          </div>
+          <div className="flex gap-3">
+            <input
+              type="text"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value)}
+              placeholder="Enter promo code"
+              className="flex-1 h-10 px-3 text-sm bg-background border border-border rounded-md text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-all duration-150"
+            />
+            <button
+              onClick={handleApplyPromo}
+              className="px-4 h-10 bg-primary text-primary-foreground text-sm font-semibold rounded-md hover:opacity-90 active:scale-[0.98] transition-all duration-150 flex-shrink-0"
+            >
+              Apply
             </button>
           </div>
+          {promoApplied && (
+            <p className="text-xs text-accent-foreground mt-2 flex items-center gap-1">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Promo code applied — 20% off!</span>
+            </p>
+          )}
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }

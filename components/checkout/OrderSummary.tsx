@@ -1,120 +1,117 @@
 'use client';
 
-import { Check, Lock, Truck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowRight, ArrowLeft, Lock } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface OrderSummaryProps {
   subtotal: number;
   discount?: number;
-  shipping?: number;
-  tax?: number;
-  onContinue: () => void;
+  onNext: () => void | Promise<void>;
+  onBack?: () => void;
+  nextLabel: string;
+  nextDisabled?: boolean;
   isLoading?: boolean;
 }
 
 export function OrderSummary({
   subtotal,
   discount = 0,
-  shipping = 10,
-  tax = 0,
-  onContinue,
+  onNext,
+  onBack,
+  nextLabel,
+  nextDisabled = false,
   isLoading = false,
 }: OrderSummaryProps) {
-  const total = subtotal - discount + shipping + tax;
-  const deliveryDate = new Date();
-  deliveryDate.setDate(deliveryDate.getDate() + 3);
+  const total = subtotal - discount;
+  const showBackButton = !!onBack;
+
+  const handleNext = async () => {
+    await onNext();
+  };
 
   return (
-    <div className="lg:sticky lg:top-24 space-y-6">
-      {/* Summary Card */}
-      <div className="bg-card border border-border rounded-lg p-6 space-y-6">
-        {/* Order Details */}
-        <div className="space-y-3">
-          <h3 className="text-lg font-bold text-foreground">Order Summary</h3>
-          
-          <div className="space-y-3 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Subtotal</span>
-              <span className="font-medium text-foreground">${subtotal.toFixed(2)}</span>
-            </div>
+    <aside className="w-full lg:w-[30%]">
+      <div className="bg-card border border-border rounded-xl shadow-sm p-6 lg:sticky lg:top-6 flex flex-col gap-6">
+        <h2 className="text-lg font-semibold text-foreground">Order Summary</h2>
 
-            {discount > 0 && (
-              <div className="flex items-center justify-between text-primary">
-                <span>Discount</span>
-                <span className="font-medium">-${discount.toFixed(2)}</span>
-              </div>
-            )}
-
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Shipping</span>
-              <span className="font-medium text-foreground">
-                {shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}
+        {/* Line Items */}
+        <div className="flex flex-col gap-3">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-muted-foreground">Subtotal</span>
+            <span className="font-medium text-foreground">
+              ${subtotal.toFixed(2)}
+            </span>
+          </div>
+          <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground">Discount</span>
+              <span className="text-[10px] font-bold bg-accent text-accent-foreground px-1.5 py-0.5 rounded uppercase tracking-wide">
+                SAVE10
               </span>
             </div>
+            <span className="font-medium text-accent-foreground">
+              −${discount.toFixed(2)}
+            </span>
+          </div>
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-muted-foreground">Shipping</span>
+            <span className="font-medium text-accent-foreground">FREE</span>
+          </div>
+        </div>
 
-            {tax > 0 && (
-              <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Tax</span>
-                <span className="font-medium text-foreground">${tax.toFixed(2)}</span>
-              </div>
+        <div className="h-px bg-border" />
+
+        {/* Total */}
+        <div className="flex justify-between items-baseline">
+          <span className="text-base font-semibold text-foreground">Total</span>
+          <div className="flex flex-col items-end">
+            <span className="text-2xl font-bold text-foreground tracking-tight">
+              ${total.toFixed(2)}
+            </span>
+          </div>
+        </div>
+
+        {/* CTA Buttons */}
+        <div className="flex flex-col gap-2">
+          {showBackButton && (
+            <button
+              onClick={onBack}
+              disabled={isLoading}
+              className="w-full h-12 rounded-xl text-base font-semibold flex items-center justify-center gap-2 transition-all duration-150 border border-border bg-background text-foreground hover:bg-muted active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span>Back</span>
+            </button>
+          )}
+          <button
+            onClick={handleNext}
+            disabled={nextDisabled || isLoading}
+            className={cn(
+              'w-full h-12 rounded-xl text-base font-semibold flex items-center justify-center gap-2 transition-all duration-150',
+              nextDisabled || isLoading
+                ? 'bg-muted text-muted-foreground cursor-not-allowed'
+                : 'bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.99] shadow-sm'
             )}
-          </div>
-
-          <div className="border-t border-border pt-3">
-            <div className="flex items-center justify-between">
-              <span className="font-semibold text-foreground">Total</span>
-              <span className="text-2xl font-bold text-primary">${total.toFixed(2)}</span>
-            </div>
-          </div>
+          >
+            <span>{isLoading ? 'Processing...' : nextLabel}</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Estimated Delivery */}
-        <div className="bg-secondary/50 rounded-lg p-4 flex items-start gap-3">
-          <Truck className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-foreground">Estimated Delivery</p>
-            <p className="text-xs text-muted-foreground">
-              {deliveryDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
-            </p>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Lock className="w-3 h-3" />
+              <span>Secure Checkout</span>
+            </span>
+            <span className="text-border">|</span>
+            <span>Free Returns</span>
           </div>
-        </div>
-
-        {/* Continue Button */}
-        <Button
-          onClick={onContinue}
-          disabled={isLoading}
-          size="lg"
-          className="w-full"
-        >
-          {isLoading ? 'Processing...' : 'Continue to Shipping'}
-        </Button>
-      </div>
-
-      {/* Trust Badges */}
-      <div className="space-y-3">
-        <div className="bg-card border border-border rounded-lg p-4 flex items-center gap-3">
-          <Lock className="w-5 h-5 text-primary flex-shrink-0" />
-          <div className="text-sm">
-            <p className="font-medium text-foreground">Secure Checkout</p>
-            <p className="text-xs text-muted-foreground">SSL Encrypted</p>
-          </div>
-        </div>
-
-        <div className="bg-card border border-border rounded-lg p-4 flex items-center gap-3">
-          <Check className="w-5 h-5 text-primary flex-shrink-0" />
-          <div className="text-sm">
-            <p className="font-medium text-foreground">Stripe Verified</p>
-            <p className="text-xs text-muted-foreground">Secure Payment</p>
-          </div>
+          <p className="text-[11px] text-center text-muted-foreground">
+            <span>Payments processed securely via Stripe</span>
+          </p>
         </div>
       </div>
-
-      {/* Return Policy */}
-      <div className="bg-secondary/30 rounded-lg p-4 text-center">
-        <p className="text-xs text-muted-foreground">
-          Don't love it? <span className="font-medium text-primary">30-day free returns</span>
-        </p>
-      </div>
-    </div>
+    </aside>
   );
 }
