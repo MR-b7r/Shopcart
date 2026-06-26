@@ -1,6 +1,3 @@
-import ProductInteraction from "@/components/ProductInteraction";
-import { ProductType } from "@/lib/types";
-import Image from "next/image";
 import React from "react";
 import {
   Accordion,
@@ -9,24 +6,12 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { getProduct } from "@/lib/actions/product.actions";
-
-// TEMPORARY
-// const product: ProductType = {
-//   id: 1,
-//   name: "Adidas CoreFit T-Shirt",
-//   shortDescription:
-//     "Lorem ipsum dolor sit amet consect adipisicing elit lorem ipsum dolor sit.",
-//   description:
-//     "Lorem ipsum dolor sit amet consect adipisicing elit lorem ipsum dolor sit. Lorem ipsum dolor sit amet consect adipisicing elit lorem ipsum dolor sit. Lorem ipsum dolor sit amet consect adipisicing elit lorem ipsum dolor sit.",
-//   price: 59.9,
-//   sizes: ["xs", "s", "m", "l", "xl"],
-//   colors: ["gray", "purple", "green"],
-//   images: {
-//     gray: "/products/1g.png",
-//     purple: "/products/1p.png",
-//     green: "/products/1gr.png",
-//   },
-// };
+import ProductGallery from "@/components/product/ProductGallery";
+import ProductInfo from "@/components/product/ProductInfo";
+import ProductFeatures from "@/components/product/ProductFeatures";
+import ProductInteraction from "@/components/ProductInteraction";
+import ReviewsSection from "@/components/reviews/ReviewsSection";
+import Image from "next/image";
 
 export const generateMetadata = async ({
   params,
@@ -38,7 +23,7 @@ export const generateMetadata = async ({
 
   return {
     title: product.name,
-    describe: product.description,
+    description: product.description,
   };
 };
 
@@ -55,61 +40,135 @@ const page = async ({
   const product = await getProduct(id);
   const selectedSize = size || (product.sizes[0] as string);
   const selectedColor = color || (product.colors[0] as string);
+
+  // Mock review data - TODO: Replace with actual data from server action
+  const mockReviews = [
+    {
+      id: "1",
+      productId: id,
+      userId: "user1",
+      userName: "Sarah Johnson",
+      rating: 5,
+      comment:
+        "Absolutely love this product! The quality is exceptional and it arrived much faster than expected. Highly recommend to everyone!",
+      createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "2",
+      productId: id,
+      userId: "user2",
+      userName: "Michael Chen",
+      rating: 4,
+      comment:
+        "Great quality and very comfortable. Only minor issue was a small defect on arrival, but customer service handled it perfectly.",
+      createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: "3",
+      productId: id,
+      userId: "user3",
+      userName: "Emma Rodriguez",
+      rating: 5,
+      comment:
+        "This is exactly what I was looking for! Perfect fit, great color, and the material is so soft. Will definitely order again.",
+      createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    },
+  ];
+
+  const mockSummary = {
+    averageRating: 4.7,
+    totalReviews: mockReviews.length,
+    ratingDistribution: {
+      5: 2,
+      4: 1,
+      3: 0,
+      2: 0,
+      1: 0,
+    },
+  };
+
   return (
-    <div className="flex flex-col gap-4 lg:flex-row md:gap-12 mt-12">
-      {/* IMAGE */}
-      <div className="w-full lg:w-5/12 relative aspect-[2/3]">
-        <Image
-          src={(product.images as Record<string, string>)?.[selectedColor]}
-          alt={product.name}
-          fill
-          className="object-contain rounded-md"
-        />
-      </div>
-      {/* DETAILS */}
-      <div className="w-full lg:w-7/12 flex flex-col gap-4">
-        <h1 className="text-2xl font-medium">{product.name}</h1>
-        <p className="text-gray-500">{product.description}</p>
-        <h2 className="text-2xl font-semibold">
-          ${(product.price / 100).toFixed(2)}
-        </h2>
-        <ProductInteraction
-          product={product}
-          selectedSize={selectedSize}
-          selectedColor={selectedColor}
-        />
-        {/* CARD INFO */}
-        <div className="flex items-center gap-2 mt-4">
-          <Image
-            src="/klarna.png"
-            alt="klarna"
-            width={50}
-            height={25}
-            className="rounded-md"
-          />
-          <Image
-            src="/cards.png"
-            alt="cards"
-            width={50}
-            height={25}
-            className="rounded-md"
-          />
-          <Image
-            src="/stripe.png"
-            alt="stripe"
-            width={50}
-            height={25}
-            className="rounded-md"
+    <div className="w-full space-y-12 mt-8 md:mt-12">
+      {/* Main Product Section */}
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+        {/* Gallery - Left Column */}
+        <div className="w-full lg:w-1/2">
+          <ProductGallery
+            images={product.images as Record<string, string>}
+            selectedColor={selectedColor}
+            productName={product.name}
           />
         </div>
-        <p className="text-gray-500 text-xs">
-          By clicking Pay Now, you agree to our{" "}
-          <span className="underline hover:text-black">Terms & Conditions</span>{" "}
-          and <span className="underline hover:text-black">Privacy Policy</span>
-          . You authorize us to charge your selected payment method for the
-          total amount shown. All sales are subject to our return and{" "}
-          <span className="underline hover:text-black">Refund Policies</span>.
-        </p>
+
+        {/* Info & Interaction - Right Column */}
+        <div className="w-full lg:w-1/2 flex flex-col gap-6">
+          <ProductInfo
+            name={product.name}
+            description={product.description}
+            price={product.price}
+            rating={mockSummary.averageRating}
+            reviewCount={mockSummary.totalReviews}
+          />
+
+          <ProductInteraction
+            product={product}
+            selectedSize={selectedSize}
+            selectedColor={selectedColor}
+          />
+
+          {/* Payment Methods */}
+          <div className="border-t pt-4">
+            <p className="text-xs text-muted-foreground mb-3">
+              Accepted payment methods:
+            </p>
+            <div className="flex items-center gap-2">
+              <Image
+                src="/klarna.png"
+                alt="klarna"
+                width={50}
+                height={25}
+                className="rounded-md"
+              />
+              <Image
+                src="/cards.png"
+                alt="cards"
+                width={50}
+                height={25}
+                className="rounded-md"
+              />
+              <Image
+                src="/stripe.png"
+                alt="stripe"
+                width={50}
+                height={25}
+                className="rounded-md"
+              />
+            </div>
+            <p className="text-gray-500 text-xs mt-4">
+              By clicking Pay Now, you agree to our{" "}
+              <span className="underline hover:text-foreground cursor-pointer">
+                Terms &amp; Conditions
+              </span>{" "}
+              and{" "}
+              <span className="underline hover:text-foreground cursor-pointer">
+                Privacy Policy
+              </span>
+              . You authorize us to charge your selected payment method for the
+              total amount shown. All sales are subject to our return and{" "}
+              <span className="underline hover:text-foreground cursor-pointer">
+                Refund Policies
+              </span>
+              .
+            </p>
+          </div>
+
+          {/* Features */}
+          <ProductFeatures />
+        </div>
+      </div>
+
+      {/* Product Information Accordion */}
+      <div className="w-full">
         <Accordion
           type="single"
           collapsible
@@ -153,19 +212,28 @@ const page = async ({
             <AccordionContent className="flex flex-col gap-4 text-balance">
               <p>
                 Your satisfaction is our priority. We provide a 30-day return
-                policy for all orders. If the item doesn’t meet your
+                policy for all orders. If the item doesn&apos;t meet your
                 expectations, you may return it in its original condition for a
                 full refund or exchange.
               </p>
               <p>
                 Returns are quick and hassle-free — simply initiate a request
-                through your account, and we’ll provide the return label.
+                through your account, and we&apos;ll provide the return label.
                 Refunds are processed within 48 hours of receiving the returned
                 item.
               </p>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
+      </div>
+
+      {/* Reviews Section */}
+      <div className="w-full">
+        <ReviewsSection
+          productId={id}
+          reviews={mockReviews}
+          summary={mockSummary}
+        />
       </div>
     </div>
   );
