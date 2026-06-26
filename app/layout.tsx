@@ -7,13 +7,11 @@ import { ClerkProvider } from "@clerk/nextjs";
 // For adding custom fonts with other frameworks, see:
 // https://tailwindcss.com/docs/font-family
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Geist } from "next/font/google";
 import "@/app/globals.css";
+import { cn } from "@/lib/utils";
 
-const fontSans = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const fontMono = JetBrains_Mono({
   subsets: ["latin"],
@@ -32,9 +30,9 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en">
+      <html lang="en" className={cn("font-sans", geist.variable)}>
         <body
-          className={`${fontSans.variable} ${fontMono.variable} antialiased`}
+          className={`${geist.variable} ${fontMono.variable} antialiased`}
         >
           {/* <ThemeProvider
           attribute="class"

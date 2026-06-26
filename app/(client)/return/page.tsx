@@ -11,17 +11,19 @@ const page = async ({
 
   if (!session_id) {
     return (
-      <div className="bg-gray-100 min-h-screen flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
-          <h2 className="text-lg font-semibold text-slate-900">
+      <div className="bg-muted/30 min-h-screen flex items-center justify-center p-4">
+        <div className="bg-card text-card-foreground border rounded-2xl shadow-sm p-8 max-w-md text-center">
+          <h2 className="text-lg font-semibold text-foreground">
             Invalid Order
           </h2>
-          <p className="text-slate-500 text-sm mt-2">
+
+          <p className="text-muted-foreground text-sm mt-2">
             No session ID found. Please return to checkout.
           </p>
+
           <Link
             href="/products"
-            className="inline-block mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm py-2 px-4 rounded-lg transition duration-200"
+            className="inline-flex items-center justify-center mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             Back to Shopping
           </Link>
@@ -51,15 +53,17 @@ const page = async ({
 
   if (error || !session) {
     return (
-      <div className="bg-gray-50 min-h-screen flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md text-center">
-          <h2 className="text-lg font-semibold text-slate-900">Error</h2>
-          <p className="text-slate-500 text-sm mt-2">
+      <div className="bg-muted/30 min-h-screen flex items-center justify-center p-4">
+        <div className="bg-card text-card-foreground border rounded-2xl shadow-sm p-8 max-w-md text-center">
+          <h2 className="text-lg font-semibold text-foreground">Error</h2>
+
+          <p className="text-muted-foreground text-sm mt-2">
             {error || "Failed to load your order."}
           </p>
+
           <Link
             href="/products"
-            className="inline-block mt-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm py-2 px-4 rounded-lg transition duration-200"
+            className="inline-flex items-center justify-center mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
           >
             Back to Shopping
           </Link>
@@ -73,21 +77,23 @@ const page = async ({
   const totalAmount = (session.amount_total || 0) / 100;
   const orderDate = new Date(session.created * 1000);
   const orderId = session.id.slice(-8).toUpperCase();
-
+  console.log(session);
   return (
-    <div className="bg-gray-50 min-h-screen flex items-center justify-center p-4 py-12">
-      <div className="bg-white rounded-2xl shadow-xl overflow-hidden w-full max-w-2xl">
+    <div className="bg-muted/30 min-h-screen flex items-center justify-center p-4 py-12">
+      <div className="bg-card text-card-foreground rounded-2xl border shadow-sm overflow-hidden w-full max-w-2xl">
         {/* Header */}
-        <div className="bg-indigo-600 px-6 py-4">
+        <div className="bg-primary px-6 py-4">
           <div className="flex items-center justify-between gap-2">
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="text-lg font-semibold text-primary-foreground">
               Order Confirmation
             </h2>
-            <span className="bg-white/20 text-white text-xs font-medium px-2.5 py-1 rounded-full">
+
+            <span className="bg-primary-foreground/10 text-primary-foreground text-xs font-medium px-2.5 py-1 rounded-full">
               {session.payment_status === "paid" ? "Paid" : "Pending"}
             </span>
           </div>
-          <p className="text-slate-200 text-sm mt-2">
+
+          <p className="text-primary-foreground/80 text-sm mt-2">
             Thank you for your order!
           </p>
         </div>
@@ -96,42 +102,50 @@ const page = async ({
           {/* Order Info */}
           <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
             <div>
-              <p className="text-slate-500 text-sm font-medium">Order Number</p>
-              <p className="text-slate-900 text-sm font-medium mt-2">
+              <p className="text-muted-foreground text-sm font-medium">
+                Order Number
+              </p>
+              <p className="text-foreground text-sm font-medium mt-2">
                 #{orderId}
               </p>
             </div>
+
             <div>
-              <p className="text-slate-500 text-sm font-medium">Date</p>
-              <p className="text-slate-900 text-sm font-medium mt-2">
+              <p className="text-muted-foreground text-sm font-medium">Date</p>
+              <p className="text-foreground text-sm font-medium mt-2">
                 {format(orderDate, "dd MMM, yyyy")}
               </p>
             </div>
+
             <div>
-              <p className="text-slate-500 text-sm font-medium">Total</p>
-              <p className="text-sm font-medium text-indigo-700 mt-2">
+              <p className="text-muted-foreground text-sm font-medium">Total</p>
+              <p className="text-sm font-medium text-primary mt-2">
                 ${totalAmount.toFixed(2)}
               </p>
             </div>
           </div>
 
           {/* Customer Info */}
-          <div className="bg-gray-100 rounded-xl p-4 mb-8">
-            <h3 className="text-base font-medium text-slate-900 mb-4">
+          <div className="bg-muted rounded-xl p-4 mb-8">
+            <h3 className="text-base font-medium text-foreground mb-4">
               Order Details
             </h3>
+
             <div className="grid sm:grid-cols-2 gap-4">
               <div>
-                <p className="text-slate-500 text-sm font-medium">Email</p>
-                <p className="text-slate-900 text-sm font-medium mt-1">
+                <p className="text-muted-foreground text-sm font-medium">
+                  Email
+                </p>
+                <p className="text-foreground text-sm font-medium mt-1">
                   {customerEmail}
                 </p>
               </div>
+
               <div>
-                <p className="text-slate-500 text-sm font-medium">
+                <p className="text-muted-foreground text-sm font-medium">
                   Payment Status
                 </p>
-                <p className="text-slate-900 text-sm font-medium mt-1 capitalize">
+                <p className="text-foreground text-sm font-medium mt-1 capitalize">
                   {session.payment_status}
                 </p>
               </div>
@@ -140,27 +154,32 @@ const page = async ({
 
           {/* Order Items */}
           <div className="mb-8">
-            <h3 className="text-base font-medium text-slate-900 mb-4">
+            <h3 className="text-base font-medium text-foreground mb-4">
               Order Items ({lineItems.length})
             </h3>
-            <div className="border border-gray-200 rounded-lg overflow-hidden">
+
+            <div className="border border-border rounded-lg overflow-hidden">
               <table className="w-full">
-                <thead className="bg-gray-50">
+                <thead className="bg-muted">
                   <tr>
-                    <th className="px-4 py-3 text-left text-sm font-medium text-slate-700">
+                    <th className="px-4 py-3 text-left text-sm font-medium text-muted-foreground">
                       Product
                     </th>
-                    <th className="px-4 py-3 text-center text-sm font-medium text-slate-700">
+
+                    <th className="px-4 py-3 text-center text-sm font-medium text-muted-foreground">
                       Qty
                     </th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-slate-700">
+
+                    <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
                       Price
                     </th>
-                    <th className="px-4 py-3 text-right text-sm font-medium text-slate-700">
+
+                    <th className="px-4 py-3 text-right text-sm font-medium text-muted-foreground">
                       Total
                     </th>
                   </tr>
                 </thead>
+
                 <tbody>
                   {lineItems.map((item, index) => {
                     const itemPrice = (item.price?.unit_amount || 0) / 100;
@@ -170,25 +189,30 @@ const page = async ({
                     return (
                       <tr
                         key={index}
-                        className="border-t border-gray-200 hover:bg-gray-50"
+                        className="border-t border-border hover:bg-muted/50"
                       >
                         <td className="px-4 py-3">
-                          <p className="text-sm font-medium text-slate-900">
+                          <p className="text-sm font-medium text-foreground">
                             {item.description ||
                               item.price?.product_data?.name ||
                               "Product"}
                           </p>
                         </td>
+
                         <td className="px-4 py-3 text-center">
-                          <p className="text-sm text-slate-600">{itemQty}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {itemQty}
+                          </p>
                         </td>
+
                         <td className="px-4 py-3 text-right">
-                          <p className="text-sm text-slate-600">
+                          <p className="text-sm text-muted-foreground">
                             ${itemPrice.toFixed(2)}
                           </p>
                         </td>
+
                         <td className="px-4 py-3 text-right">
-                          <p className="text-sm font-medium text-slate-900">
+                          <p className="text-sm font-medium text-foreground">
                             ${itemTotal.toFixed(2)}
                           </p>
                         </td>
@@ -201,22 +225,28 @@ const page = async ({
           </div>
 
           {/* Order Summary */}
-          <div className="bg-gray-100 rounded-xl p-4">
-            <h3 className="text-base font-medium text-slate-900 mb-4">
+          <div className="bg-muted rounded-xl p-4">
+            <h3 className="text-base font-medium text-foreground mb-4">
               Order Summary
             </h3>
+
             <div className="space-y-3">
               <div className="flex justify-between">
-                <p className="text-sm text-slate-600 font-medium">Subtotal</p>
-                <p className="text-slate-900 text-sm font-semibold">
+                <p className="text-sm text-muted-foreground font-medium">
+                  Subtotal
+                </p>
+
+                <p className="text-foreground text-sm font-semibold">
                   ${totalAmount.toFixed(2)}
                 </p>
               </div>
-              <div className="flex justify-between pt-3 border-t border-gray-300">
-                <p className="text-[15px] font-semibold text-slate-900">
+
+              <div className="flex justify-between pt-3 border-t border-border">
+                <p className="text-[15px] font-semibold text-foreground">
                   Total
                 </p>
-                <p className="text-[15px] font-semibold text-indigo-700">
+
+                <p className="text-[15px] font-semibold text-primary">
                   ${totalAmount.toFixed(2)}
                 </p>
               </div>
@@ -225,22 +255,23 @@ const page = async ({
         </div>
 
         {/* Footer */}
-        <div className="bg-gray-100 px-6 py-4">
+        <div className="bg-muted px-6 py-4 border-t">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-slate-500 text-sm font-medium">
+            <p className="text-muted-foreground text-sm font-medium">
               Need help?{" "}
               <a
                 href="mailto:haithamb74@gmail.com"
-                className="text-indigo-700 hover:underline"
+                className="text-primary hover:underline"
               >
                 Contact us
               </a>
             </p>
+
             <Link
-              href="/products"
-              className="bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-[15px] py-2 px-4 rounded-lg cursor-pointer transition duration-200"
+              href="/orders"
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
             >
-              Continue Shopping
+              Go to My Orders
             </Link>
           </div>
         </div>

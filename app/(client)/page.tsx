@@ -150,9 +150,9 @@ export default async function HomePage({
           <Input
             type="email"
             placeholder="email@example.com"
-            className="flex-1 py-4 px-6"
+            className="flex-1 py-5!"
           />
-          <Button type="submit" className="py-4 px-6">
+          <Button type="submit" className="py-5!">
             Subscribe
           </Button>
         </form>

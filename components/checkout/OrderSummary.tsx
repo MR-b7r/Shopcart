@@ -1,27 +1,33 @@
 "use client";
 
-import { ArrowRight, Check, Lock, Truck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, ArrowLeft, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface OrderSummaryProps {
   subtotal: number;
   discount?: number;
-  currentStep: number;
-  handlePreviousStep: () => void;
-  handleNextStep: () => void;
-  isEmpty: boolean;
+  onNext: () => void | Promise<void>;
+  onBack?: () => void;
+  nextLabel: string;
+  nextDisabled?: boolean;
+  isLoading?: boolean;
 }
 
 export function OrderSummary({
   subtotal,
   discount = 0,
-  currentStep,
-  handlePreviousStep,
-  handleNextStep,
-  isEmpty,
+  onNext,
+  onBack,
+  nextLabel,
+  nextDisabled = false,
+  isLoading = false,
 }: OrderSummaryProps) {
   const total = subtotal - discount;
+  const showBackButton = !!onBack;
+
+  const handleNext = async () => {
+    await onNext();
+  };
 
   return (
     <aside className="w-full lg:w-[30%]">
@@ -65,36 +71,29 @@ export function OrderSummary({
           </div>
         </div>
 
-        {/* CTA Button */}
+        {/* CTA Buttons */}
         <div className="flex flex-col gap-2">
-          {currentStep > 1 && (
+          {showBackButton && (
             <button
-              onClick={handlePreviousStep}
-              className="w-full h-12 rounded-xl text-base font-semibold flex items-center justify-center gap-2 transition-all duration-150 border border-border bg-background text-foreground hover:bg-muted active:scale-[0.99]"
+              onClick={onBack}
+              disabled={isLoading}
+              className="w-full h-12 rounded-xl text-base font-semibold flex items-center justify-center gap-2 transition-all duration-150 border border-border bg-background text-foreground hover:bg-muted active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <ArrowRight className="w-4 h-4 rotate-180" />
+              <ArrowLeft className="w-4 h-4" />
               <span>Back</span>
             </button>
           )}
           <button
-            type="submit"
-            form={`${currentStep === 2 && "shipping-form"}`}
-            disabled={isEmpty && currentStep === 1}
-            onClick={handleNextStep}
+            onClick={handleNext}
+            disabled={nextDisabled || isLoading}
             className={cn(
               "w-full h-12 rounded-xl text-base font-semibold flex items-center justify-center gap-2 transition-all duration-150",
-              isEmpty && currentStep === 1
+              nextDisabled || isLoading
                 ? "bg-muted text-muted-foreground cursor-not-allowed"
                 : "bg-primary text-primary-foreground hover:opacity-90 active:scale-[0.99] shadow-sm",
             )}
           >
-            <span>
-              {currentStep === 1
-                ? "Continue to Shipping"
-                : currentStep === 2
-                  ? "Continue to Payment"
-                  : "Complete Order"}
-            </span>
+            <span>{isLoading ? "Processing..." : nextLabel}</span>
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>

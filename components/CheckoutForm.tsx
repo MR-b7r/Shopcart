@@ -1,9 +1,9 @@
 "use client";
 import React, { useState } from "react";
-import { PaymentElement, useCheckout } from "@stripe/react-stripe-js/checkout";
-
 import { ShippingFormInputs } from "@/lib/types";
 import { ConfirmError } from "@stripe/stripe-js";
+import { Button } from "./ui/button";
+import { useCheckout, PaymentElement } from "@stripe/react-stripe-js/checkout";
 
 const CheckoutForm = ({
   shippingForm,
@@ -13,7 +13,6 @@ const CheckoutForm = ({
   const checkout = useCheckout();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ConfirmError | null>(null);
-
   const handleClick = async () => {
     setLoading(true);
     await checkout.checkout.updateEmail(shippingForm.email);
@@ -29,6 +28,7 @@ const CheckoutForm = ({
     const res = await checkout.checkout.confirm();
     if (res.type === "error") {
       setError(res.error);
+      console.log("Error confirming checkout:", res.error);
     }
     setLoading(false);
   };
@@ -36,10 +36,20 @@ const CheckoutForm = ({
   return (
     <form>
       <PaymentElement options={{ layout: "accordion" }} />
-      <button disabled={loading} onClick={handleClick}>
-        {loading ? "Loading..." : "Pay"}
-      </button>
-      {error && <div className="">{error.message}</div>}
+      <Button
+        className="my-5 px-3 py-2"
+        size={"lg"}
+        disabled={loading}
+        onClick={handleClick}
+      >
+        {loading ? "Loading..." : "Pay now"}
+      </Button>
+
+      {error && (
+        <div className="text-red-500 text-sm font-semibold">
+          {error.message}
+        </div>
+      )}
     </form>
   );
 };

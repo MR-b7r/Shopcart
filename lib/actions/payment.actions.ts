@@ -77,7 +77,7 @@ export async function createCheckoutSession({
   userId,
 }: {
   cart: CartItemType[];
-  userId: string;
+  userId?: string | null;
 }) {
   const lineItems = await Promise.all(
     cart.map(async (item) => {
@@ -98,13 +98,19 @@ export async function createCheckoutSession({
     }),
   );
 
-  const session = await stripe.checkout.sessions.create({
+  const sessionParams: any = {
     line_items: lineItems,
-    client_reference_id: userId,
     mode: "payment",
     ui_mode: "custom",
     return_url: `${process.env.NEXT_PUBLIC_PAYMENT_SERVICE_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
-  });
+  };
+
+  // Only set client_reference_id when we have a non-empty userId
+  if (userId) {
+    sessionParams.client_reference_id = userId;
+  }
+
+  const session = await stripe.checkout.sessions.create(sessionParams);
 
   return parseStringify({ checkoutSessionClientSecret: session.client_secret });
 }
