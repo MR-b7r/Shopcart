@@ -31,7 +31,8 @@ export async function POST(req: Request) {
       }
       const session = event.data.object as Stripe.Checkout.Session;
 
-      const lineItems = await stripe.checkout.sessions.listLineItems(
+      // Start fetching line items early (async-api-routes pattern)
+      const lineItemsPromise = stripe.checkout.sessions.listLineItems(
         session.id,
       );
 
@@ -41,40 +42,40 @@ export async function POST(req: Request) {
       console.log("Customer Email:", session.customer_details?.email);
       console.log("Amount Total:", session.amount_total);
       console.log("Payment Status:", session.payment_status);
+
+      // Await line items
+      const lineItems = await lineItemsPromise;
       console.log("Number of line items:", lineItems.data.length);
 
-      // Extract and validate product IDs from line items
+      // Extract and validate product IDs from line items (async-cheap-condition-before-await)
+      if (lineItems.data.length === 0) {
+        throw new Error("No line items found in checkout session");
+      }
+
       const stripeProducts = lineItems.data.map((item, index) => {
-        const productId = item.price?.product_data?.metadata
-          ?.productId as string;
+        const productId = item.price?.product?.metadata?.productId as string;
+        
         console.log(`Line item ${index}:`, {
           description: item.description,
           quantity: item.quantity,
           unitAmount: item.price?.unit_amount,
           productId: productId,
           hasMetadata: !!item.price?.product?.metadata,
+          metadata: item.price?.product?.metadata,
         });
 
         if (!productId) {
           throw new Error(
-            `Product ID not found in line item ${index}. Item: ${JSON.stringify(
-              {
-                description: item.description,
-                quantity: item.quantity,
-                unitAmount: item.price?.unit_amount,
-                metadata: item.price?.product?.metadata,
-              },
-            )}`,
+            `Product ID not found in line item ${index}. Stripe metadata: ${JSON.stringify(
+              item.price?.product?.metadata,
+            )}. Make sure products in Stripe have 'productId' in their metadata.`,
           );
         }
 
         return {
-          // productId,
-          // quantity: item.quantity ?? 1,
-          // price: item.price?.unit_amount ?? 0,
-          productId: "cmnunhtoh0006psvx09jx7lt6",
-          quantity: 1,
-          price: 2000,
+          productId,
+          quantity: item.quantity ?? 1,
+          price: item.price?.unit_amount ?? 0,
         };
       });
 
@@ -84,23 +85,12 @@ export async function POST(req: Request) {
       );
 
       const orderData = {
-        // userId: session.client_reference_id!,
-        // email: session.customer_details?.email!,
-        // amount: session.amount_total!,
-        // status: session.payment_status === "paid" ? "success" : "failed",
-        userId: "user_3CGcjd53NTUFXysPVZyKaIbklCM",
-        email: "haithamb74@gmail.com",
-        status: "success",
-        amount: 2000,
-
+        userId: session.client_reference_id!,
+        email: session.customer_details?.email!,
+        amount: session.amount_total!,
+        status: session.payment_status === "paid" ? "success" : "failed",
         products: {
-          create: [
-            {
-              productId: "cmnunhtoh0006psvx09jx7lt6",
-              quantity: 1,
-              price: 2000,
-            },
-          ],
+          create: stripeProducts,
         },
       };
 
@@ -110,21 +100,27 @@ export async function POST(req: Request) {
         const order = await createOrder(orderData);
         console.log("✅ Order created successfully:", order.id);
 
-        // Send order confirmation email
+        // Send order confirmation email in parallel (async-parallel pattern)
         const orderProducts = lineItems.data.map((item) => ({
           name: item.price?.product?.name || "Product",
           quantity: item.quantity ?? 1,
           price: item.price?.unit_amount ?? 0,
         }));
 
-        await sendOrderEmail(
+        // Don't await email - return response immediately (async-api-routes pattern)
+        sendOrderEmail(
           session.customer_details?.email!,
           orderProducts,
           session.amount_total!,
-        );
+        ).catch((emailError) => {
+          console.error("❌ Error sending confirmation email:", emailError.message);
+        });
       } catch (createError: any) {
-        console.error("❌ Error creating order:", createError.message);
-        console.error("Create error details:", createError);
+        console.error(
+          "❌ Error creating order:",
+          createError.message,
+        );
+        console.error("Full error:", createError);
         throw createError;
       }
     }

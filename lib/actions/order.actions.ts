@@ -18,8 +18,6 @@ export const createOrder = async (data: Prisma.OrderCreateInput) => {
     if (data.amount === undefined || data.amount === null)
       throw new Error("amount is required");
 
-    console.log("Creating order with data:", JSON.stringify(data, null, 2));
-
     const newOrder = await db.order.create({
       data: {
         userId: data.userId as string,
@@ -27,6 +25,13 @@ export const createOrder = async (data: Prisma.OrderCreateInput) => {
         amount: data.amount as number,
         status: (data.status as any) || "failed",
         products: data.products,
+      },
+      include: {
+        products: {
+          include: {
+            product: true,
+          },
+        },
       },
     });
 
