@@ -1,11 +1,9 @@
 import { createOrder, getOrders } from "@/lib/actions/order.actions";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-
-    console.log("[POST /api/orders] Received body:", body);
 
     if (!body.userId) {
       throw new Error("userId is required in request body");
@@ -18,17 +16,19 @@ export async function POST(req: Request) {
     }
 
     const order = await createOrder(body);
-    console.log("[POST /api/orders] Order created:", order);
     return NextResponse.json(order, { status: 201 });
   } catch (error: any) {
     console.error("[POST /api/orders] Error:", error);
     return NextResponse.json(
-      { message: error.message || "Failed to create order", error: error.toString() },
-      { status: 400 }
+      {
+        message: error.message || "Failed to create order",
+        error: error.toString(),
+      },
+      { status: 400 },
     );
   }
 }
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     const orders = await getOrders();
     return NextResponse.json(orders, { status: 200 });

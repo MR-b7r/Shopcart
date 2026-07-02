@@ -124,6 +124,21 @@ export const getUserOrders = async ({
 
   return parseStringify(orders);
 };
+export const getOrderById = async (orderId: string) => {
+  const order = await db.order.findUnique({
+    where: {
+      id: orderId,
+    },
+    include: {
+      products: {
+        include: {
+          product: true,
+        },
+      },
+    },
+  });
+  return parseStringify(order);
+};
 
 export const orderChart = async () => {
   await shouldBeAdmin();

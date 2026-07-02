@@ -8,10 +8,10 @@ import Stripe from "stripe";
 const webHookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(req: Request) {
+  console.log("🔥 WEBHOOK HIT");
   try {
     const body = await req.text();
-    const signature = headers().get("stripe-signature");
-
+    const signature = (await headers()).get("stripe-signature");
     if (!signature) {
       return new Response("Invalid signature", { status: 400 });
     }
@@ -31,30 +31,17 @@ export async function POST(req: Request) {
       }
       const session = event.data.object as Stripe.Checkout.Session;
 
-      // Start fetching line items early (async-api-routes pattern)
       const lineItemsPromise = stripe.checkout.sessions.listLineItems(
         session.id,
+        {
+          expand: ["data.price.product"],
+        },
       );
 
-      console.log("=== WEBHOOK DEBUG ===");
-      console.log("Session ID:", session.id);
-      console.log("Client Reference ID (userId):", session.client_reference_id);
-      console.log("Customer Email:", session.customer_details?.email);
-      console.log("Amount Total:", session.amount_total);
-      console.log("Payment Status:", session.payment_status);
-
-      // Await line items
       const lineItems = await lineItemsPromise;
-      console.log("Number of line items:", lineItems.data.length);
-
-      // Extract and validate product IDs from line items (async-cheap-condition-before-await)
-      if (lineItems.data.length === 0) {
-        throw new Error("No line items found in checkout session");
-      }
 
       const stripeProducts = lineItems.data.map((item, index) => {
         const productId = item.price?.product?.metadata?.productId as string;
-        
         console.log(`Line item ${index}:`, {
           description: item.description,
           quantity: item.quantity,
@@ -87,7 +74,7 @@ export async function POST(req: Request) {
       const orderData = {
         userId: session.client_reference_id!,
         email: session.customer_details?.email!,
-        amount: session.amount_total!,
+        amount: Number(session.amount_total!),
         status: session.payment_status === "paid" ? "success" : "failed",
         products: {
           create: stripeProducts,
@@ -107,20 +94,18 @@ export async function POST(req: Request) {
           price: item.price?.unit_amount ?? 0,
         }));
 
-        // Don't await email - return response immediately (async-api-routes pattern)
         sendOrderEmail(
           session.customer_details?.email!,
           orderProducts,
           session.amount_total!,
         ).catch((emailError) => {
-          console.error("❌ Error sending confirmation email:", emailError.message);
+          console.error(
+            "❌ Error sending confirmation email:",
+            emailError.message,
+          );
         });
       } catch (createError: any) {
-        console.error(
-          "❌ Error creating order:",
-          createError.message,
-        );
-        console.error("Full error:", createError);
+        console.error("❌ Error creating order:", createError.message);
         throw createError;
       }
     }

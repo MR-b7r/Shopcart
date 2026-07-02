@@ -79,9 +79,12 @@ const page = async ({
             <div className="ml-auto text-right">
               <p>ORDER # {order.id}</p>
 
-              <button className="mt-1 text-primary hover:underline">
+              <Link
+                href={`/orders/${order.id}`}
+                className="mt-1 text-primary hover:underline"
+              >
                 View order details
-              </button>
+              </Link>
             </div>
           </div>
 

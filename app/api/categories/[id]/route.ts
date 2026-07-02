@@ -1,12 +1,12 @@
 import { deleteCategory, updateCategory } from "@/lib/actions/category.actions";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 
 export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const body = await req.json();
 
     const updatedCategory = await updateCategory({
@@ -21,11 +21,11 @@ export async function PUT(
 }
 
 export async function DELETE(
-  req: Request,
-  { params }: { params: { id: number } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const deletedCategory = await deleteCategory(Number(id));
 
     return NextResponse.json(deletedCategory, { status: 201 });

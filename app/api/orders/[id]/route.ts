@@ -1,12 +1,12 @@
 import { getUserOrders } from "@/lib/actions/order.actions";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-  req: Request,
-  { params }: { params: { id: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const orders = await getUserOrders(id);
     return NextResponse.json(orders, { status: 200 });
   } catch (error: any) {
