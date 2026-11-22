@@ -1,24 +1,11 @@
-import ProductList from "@/components/ProductList";
-import React from "react";
+import type { Metadata } from "next";
+import { ShopPage, type ShopSearchParams } from "@/components/shop/ShopPage";
 
-const page = async ({
-  searchParams,
-}: {
-  searchParams: Promise<{ category: string; sort: string; search: string }>;
-}) => {
-  const category = (await searchParams).category;
-  const sort = (await searchParams).sort;
-  const search = (await searchParams).search;
-  return (
-    <div className="">
-      <ProductList
-        category={category}
-        sort={sort}
-        search={search}
-        params="products"
-      />
-    </div>
-  );
+export const metadata: Metadata = {
+  title: "Shop the Collection | B7R Store",
+  description: "Browse clothing, shoes, bags, and accessories at B7R Store.",
 };
 
-export default page;
+export default function ProductsPage({ searchParams }: { searchParams: Promise<ShopSearchParams> }) {
+  return <ShopPage searchParams={searchParams} />;
+}

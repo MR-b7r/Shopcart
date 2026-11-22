@@ -8,6 +8,7 @@ import {
   shouldBeAdmin,
 } from "./payment.actions";
 import { stripeProductType } from "../types";
+import { SHOP_PAGE_SIZE, shopFiltersSchema } from "../types/shop-filters";
 
 export const createProduct = async (data: Prisma.ProductCreateInput) => {
   const { colors, images } = data;
@@ -34,7 +35,12 @@ export const createProduct = async (data: Prisma.ProductCreateInput) => {
   return parseStringify(product);
 };
 
-export const getProducts = async (filter) => {
+export const getProducts = async (filter: {
+  sort?: string;
+  category?: string;
+  search?: string;
+  limit?: number | string;
+}) => {
   const { sort, category, search, limit } = filter;
   const orderBy = () => {
     switch (sort) {
@@ -66,6 +72,61 @@ export const getProducts = async (filter) => {
     take: limit ? Number(limit) : undefined,
   });
   return parseStringify(products);
+};
+
+export const getShopProducts = async (input: unknown) => {
+  const filters = shopFiltersSchema.parse(input);
+  const pageSize = SHOP_PAGE_SIZE;
+  const where: Prisma.ProductWhereInput = {
+    ...(filters.category !== "all"
+      ? { category: { slug: filters.category } }
+      : {}),
+    ...(filters.search
+      ? { name: { contains: filters.search, mode: "insensitive" } }
+      : {}),
+    ...(filters.minPrice !== undefined || filters.maxPrice !== undefined
+      ? {
+          price: {
+            ...(filters.minPrice !== undefined ? { gte: filters.minPrice } : {}),
+            ...(filters.maxPrice !== undefined ? { lte: filters.maxPrice } : {}),
+          },
+        }
+      : {}),
+  };
+  const orderBy: Prisma.ProductOrderByWithRelationInput = (() => {
+    switch (filters.sort) {
+      case "oldest":
+        return { createdAt: Prisma.SortOrder.asc };
+      case "price-asc":
+        return { price: Prisma.SortOrder.asc };
+      case "price-desc":
+        return { price: Prisma.SortOrder.desc };
+      case "newest":
+      default:
+        return { createdAt: Prisma.SortOrder.desc };
+    }
+  })();
+
+  const [products, totalCount, priceBounds] = await Promise.all([
+    db.product.findMany({
+      where,
+      orderBy,
+      skip: (filters.page - 1) * pageSize,
+      take: pageSize,
+    }),
+    db.product.count({ where }),
+    db.product.aggregate({ _min: { price: true }, _max: { price: true } }),
+  ]);
+
+  return parseStringify({
+    products,
+    totalCount,
+    totalPages: Math.ceil(totalCount / pageSize),
+    priceBounds: {
+      min: priceBounds._min.price ?? 0,
+      max: priceBounds._max.price ?? 1000,
+    },
+  });
 };
 
 export const getProduct = async (id: string) => {
