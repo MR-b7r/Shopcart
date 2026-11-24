@@ -8,8 +8,6 @@ import { useState } from "react";
 import React from "react";
 import { toast } from "react-toastify";
 import { Button } from "./ui/button";
-import { createProduct } from "@/lib/actions/product.actions";
-import { getCategories } from "@/lib/actions/category.actions";
 
 const ProductCard = ({ product }: { product: ProductType }) => {
   const { addToCart } = useCartStore();
@@ -38,23 +36,23 @@ const ProductCard = ({ product }: { product: ProductType }) => {
   };
 
   return (
-    <div className="shadow-lg rounded-lg overflow-hidden">
-      <Link href={`/products/${product.id}`}>
-        <div className="relative aspect-[2/3]">
+    <article className="group overflow-hidden rounded-xl border border-border bg-card shadow-sm transition duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+      <Link href={`/products/${product.id}`} aria-label={`View ${product.name}`}>
+        <div className="relative aspect-[4/5] overflow-hidden bg-muted">
           <Image
             src={
               (product.images as Record<string, string>)?.[productTypes.color]
             }
             alt={product.name}
             fill
-            className="object-cover hover:scale-105 transition-all duration-300"
+            className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
           />
         </div>
       </Link>
 
       <div className="flex flex-col p-4 gap-4">
-        <h1 className="font-medium">{product.name}</h1>
-        <p className="text-sm text-gray-500">{product.shortDescription}</p>
+        <h2 className="font-medium text-card-foreground">{product.name}</h2>
+        <p className="text-sm text-muted-foreground">{product.shortDescription}</p>
 
         <div className="flex items-center gap-4 text-xs">
           <div className="flex flex-col gap-1">
@@ -106,7 +104,7 @@ const ProductCard = ({ product }: { product: ProductType }) => {
           </Button>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
 

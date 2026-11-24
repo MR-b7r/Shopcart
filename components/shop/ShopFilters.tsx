@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, useTransition, type ReactNode } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   BriefcaseBusiness,
@@ -14,7 +14,6 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import {
   Sheet,
@@ -70,22 +69,23 @@ export function ShopFilters({
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [searchText, setSearchText] = useState(search);
-  const [minimum, setMinimum] = useState(minPrice?.toString() ?? "");
-  const [maximum, setMaximum] = useState(maxPrice?.toString() ?? "");
   const rangeCeiling = Math.max(priceCeiling, priceFloor + 1);
   const [priceRange, setPriceRange] = useState<[number, number]>([
     minPrice ?? priceFloor,
-    maxPrice ?? rangeCeiling,
+    maxPrice ?? priceCeiling,
   ]);
-  const [priceError, setPriceError] = useState("");
+  const [isPending, startTransition] = useTransition();
   const paramsString = searchParams.toString();
+  const formatPrice = (price: number) => new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+  }).format(price);
 
   useEffect(() => {
     setSearchText(search);
-    setMinimum(minPrice?.toString() ?? "");
-    setMaximum(maxPrice?.toString() ?? "");
-    setPriceRange([minPrice ?? priceFloor, maxPrice ?? rangeCeiling]);
-  }, [search, minPrice, maxPrice, priceFloor, rangeCeiling]);
+    setPriceRange([minPrice ?? priceFloor, maxPrice ?? priceCeiling]);
+  }, [search, minPrice, maxPrice, priceFloor, priceCeiling, rangeCeiling]);
 
   const activeFilterCount = useMemo(
     () => Number(category !== "all") + Number(Boolean(search)) + Number(minPrice !== undefined) + Number(maxPrice !== undefined) + Number(sort !== "newest"),
@@ -93,14 +93,16 @@ export function ShopFilters({
   );
 
   const updateParams = (updates: Record<string, string | undefined>, resetPage = true) => {
-    const params = new URLSearchParams(paramsString);
+    const params = new URLSearchParams(window.location.search);
     Object.entries(updates).forEach(([key, value]) => {
       if (!value) params.delete(key);
       else params.set(key, value);
     });
     if (resetPage) params.delete("page");
     const query = params.toString();
-    router.push(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    startTransition(() => {
+      router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
+    });
   };
 
   useEffect(() => {
@@ -112,36 +114,24 @@ export function ShopFilters({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchText, search, paramsString]);
 
-  const applyPrice = (nextMinimum = minimum, nextMaximum = maximum) => {
-    const parsedMinimum = nextMinimum === "" ? priceFloor : Number(nextMinimum);
-    const parsedMaximum = nextMaximum === "" ? rangeCeiling : Number(nextMaximum);
-    if (
-      !Number.isFinite(parsedMinimum) ||
-      !Number.isFinite(parsedMaximum) ||
-      parsedMinimum < priceFloor ||
-      parsedMaximum > rangeCeiling ||
-      parsedMinimum > parsedMaximum
-    ) {
-      setPriceError("Enter a valid price range.");
-      return;
-    }
+  useEffect(() => {
+    const [minimum, maximum] = priceRange;
+    if (minimum === (minPrice ?? priceFloor) && maximum === (maxPrice ?? priceCeiling)) return;
 
-    setPriceError("");
-    setPriceRange([parsedMinimum, parsedMaximum]);
-    setMinimum(nextMinimum);
-    setMaximum(nextMaximum);
-    updateParams({
-      minPrice: parsedMinimum > priceFloor ? String(parsedMinimum) : undefined,
-      maxPrice: parsedMaximum < priceCeiling ? String(parsedMaximum) : undefined,
-    });
-  };
+    const timer = window.setTimeout(() => {
+      updateParams({
+        minPrice: minimum > priceFloor ? String(minimum) : undefined,
+        maxPrice: maximum < priceCeiling ? String(maximum) : undefined,
+      });
+    }, 350);
+    return () => window.clearTimeout(timer);
+    // Keep price URL updates debounced while dragging; paramsString refreshes on navigation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [priceRange, minPrice, maxPrice, priceFloor, priceCeiling, paramsString]);
 
   const clearFilters = () => {
     setSearchText("");
-    setMinimum("");
-    setMaximum("");
-    setPriceError("");
-    setPriceRange([priceFloor, rangeCeiling]);
+    setPriceRange([priceFloor, priceCeiling]);
     updateParams({ search: undefined, minPrice: undefined, maxPrice: undefined, category: "all", sort: undefined });
   };
 
@@ -172,79 +162,36 @@ export function ShopFilters({
   const filterContent = (
     <div className="flex flex-col gap-7">
       <section aria-labelledby="price-filter-title" className="flex flex-col gap-3">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-3">
           <h3 id="price-filter-title" className="text-sm font-semibold">Price range</h3>
-          <span className="text-xs text-muted-foreground">${priceFloor} – ${priceCeiling}</span>
+          <span className="text-xs text-muted-foreground">{formatPrice(priceFloor)} – {formatPrice(priceCeiling)}</span>
         </div>
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
+          <p className="flex items-center justify-between text-sm tabular-nums" aria-live="polite">
+            <span>{formatPrice(priceRange[0])}</span>
+            <span>{formatPrice(priceRange[1])}</span>
+          </p>
           <Slider
             aria-label="Price range"
+            thumbLabels={["Minimum price", "Maximum price"]}
             aria-describedby="price-range-description"
             value={priceRange}
             min={priceFloor}
             max={rangeCeiling}
             minStepsBetweenThumbs={1}
+            disabled={priceFloor === priceCeiling}
             onValueChange={(values) => {
               const [nextMinimum, nextMaximum] = values;
-              if (nextMinimum === undefined || nextMaximum === undefined) return;
-              setPriceRange([nextMinimum, nextMaximum]);
-              setMinimum(String(nextMinimum));
-              setMaximum(String(nextMaximum));
-              setPriceError("");
-            }}
-            onValueCommit={(values) => {
-              const [nextMinimum, nextMaximum] = values;
               if (nextMinimum !== undefined && nextMaximum !== undefined) {
-                applyPrice(String(nextMinimum), String(nextMaximum));
+                setPriceRange([nextMinimum, nextMaximum]);
               }
             }}
+            className="min-h-8 w-full"
           />
           <p id="price-range-description" className="sr-only">
             Adjust the minimum and maximum prices using the slider handles.
           </p>
-          <div className="grid grid-cols-2 gap-3">
-            <label className="flex flex-col gap-1.5 text-xs text-muted-foreground">
-              Minimum
-              <Input
-                aria-label="Minimum price"
-                aria-invalid={Boolean(priceError)}
-                type="number"
-                min={priceFloor}
-                max={rangeCeiling}
-                value={minimum}
-                onChange={(event) => {
-                  setMinimum(event.target.value);
-                  setPriceError("");
-                }}
-                onBlur={() => applyPrice()}
-                onKeyDown={(event) => event.key === "Enter" && applyPrice()}
-                placeholder={`${priceFloor}`}
-                className="h-10"
-              />
-            </label>
-            <label className="flex flex-col gap-1.5 text-xs text-muted-foreground">
-              Maximum
-              <Input
-                aria-label="Maximum price"
-                aria-invalid={Boolean(priceError)}
-                type="number"
-                min={priceFloor}
-                max={rangeCeiling}
-                value={maximum}
-                onChange={(event) => {
-                  setMaximum(event.target.value);
-                  setPriceError("");
-                }}
-                onBlur={() => applyPrice()}
-                onKeyDown={(event) => event.key === "Enter" && applyPrice()}
-                placeholder={`${priceCeiling}`}
-                className="h-10"
-              />
-            </label>
-          </div>
-          {priceError && <p role="alert" className="text-xs text-destructive">{priceError}</p>}
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={() => applyPrice()}>Apply price</Button>
       </section>
 
       <section aria-labelledby="sort-filter-title" className="flex flex-col gap-3">
@@ -273,8 +220,8 @@ export function ShopFilters({
   const selectedCategory = categories.find((item) => item.slug === category)?.name ?? "All Products";
   const chips = [
     ...(search ? [{ label: `Search: “${search}”`, remove: () => updateParams({ search: undefined }) }] : []),
-    ...(minPrice !== undefined ? [{ label: `From $${minPrice}`, remove: () => updateParams({ minPrice: undefined }) }] : []),
-    ...(maxPrice !== undefined ? [{ label: `Up to $${maxPrice}`, remove: () => updateParams({ maxPrice: undefined }) }] : []),
+    ...(minPrice !== undefined ? [{ label: `From ${formatPrice(minPrice)}`, remove: () => updateParams({ minPrice: undefined }) }] : []),
+    ...(maxPrice !== undefined ? [{ label: `Up to ${formatPrice(maxPrice)}`, remove: () => updateParams({ maxPrice: undefined }) }] : []),
     ...(category !== "all" ? [{ label: selectedCategory, remove: () => updateParams({ category: undefined }) }] : []),
     ...(sort !== "newest" ? [{ label: `Sort: ${sortOptions.find((option) => option.value === sort)?.label ?? sort}`, remove: () => updateParams({ sort: undefined }) }] : []),
   ];
@@ -305,7 +252,7 @@ export function ShopFilters({
               {sortOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
             </select>
           </label>
-          <p className="hidden text-sm text-muted-foreground sm:block" aria-live="polite">{resultCount} {resultCount === 1 ? "item" : "items"}</p>
+          <p className="whitespace-nowrap text-xs text-muted-foreground sm:text-sm" aria-live="polite">{resultCount} {resultCount === 1 ? "item" : "items"}</p>
           <Sheet>
             <SheetTrigger asChild>
               <Button type="button" variant="outline" className="lg:hidden">
@@ -341,7 +288,10 @@ export function ShopFilters({
                 <button type="button" onClick={clearFilters} className="px-2 py-1 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground">Clear all</button>
               </div>
             )}
-            {children}
+            <div aria-busy={isPending} className="relative min-w-0">
+              {isPending && <p role="status" className="absolute -top-6 right-0 text-xs text-muted-foreground">Updating products…</p>}
+              {children}
+            </div>
           </div>
         </div>
       </div>
@@ -356,7 +306,10 @@ export function ShopFilters({
             <button type="button" onClick={clearFilters} className="px-2 py-1 text-xs text-muted-foreground underline underline-offset-4">Clear all</button>
           </div>
         )}
-        {children}
+        <div aria-busy={isPending} className="relative min-w-0">
+          {isPending && <p role="status" className="absolute -top-6 right-0 text-xs text-muted-foreground">Updating products…</p>}
+          {children}
+        </div>
       </div>
     </div>
   );

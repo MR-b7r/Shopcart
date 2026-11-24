@@ -37,7 +37,7 @@ export async function ShopPage({ searchParams }: { searchParams: Promise<ShopSea
   );
 
   return (
-    <main className="shop-page flex flex-col gap-8 bg-background pb-12 text-foreground">
+    <main className="shop-page mx-auto flex w-full max-w-[1440px] flex-col gap-8 bg-background px-4 pb-12 text-foreground sm:px-6 lg:px-10 xl:px-12">
       <header className="flex flex-col gap-3 border-b border-border pb-7">
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground">
           <Link href="/" className="transition-colors hover:text-foreground">Home</Link>
